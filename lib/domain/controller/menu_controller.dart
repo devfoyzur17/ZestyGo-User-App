@@ -5,7 +5,13 @@ class MenuController extends GetxController {
   int selectedCategoryIndex = 0;
 
   // List of categories for the filter bar
-  final List<String> categories = ['Zinger', 'Veggi', 'Checkin', 'Him', 'Cheese'];
+  final List<String> categories = [
+    'Zinger',
+    'Veggi',
+    'Checkin',
+    'Him',
+    'Cheese',
+  ];
 
   // Update selected category and refresh UI
   void setCategory(int index) {
@@ -19,13 +25,15 @@ class MenuController extends GetxController {
       'name': 'Cheeseburger',
       'price': 12.50,
       'rating': 4.8,
-      'image': 'https://img.freepik.com/free-photo/delicious-burger-with-fresh-ingredients_23-2150857908.jpg'
+      'image':
+          'https://img.freepik.com/free-photo/delicious-burger-with-fresh-ingredients_23-2150857908.jpg',
     },
     {
       'name': 'Veggie Burger',
       'price': 12.50,
       'rating': 4.5,
-      'image': 'https://img.freepik.com/free-photo/view-delicious-veggie-burger_23-2150170685.jpg'
+      'image':
+          'https://img.freepik.com/free-photo/view-delicious-veggie-burger_23-2150170685.jpg',
     },
   ];
 }
