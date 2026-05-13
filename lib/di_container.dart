@@ -1,9 +1,11 @@
 import 'dart:async';
 
 import 'package:demo_app/domain/controller/dashboard_controller.dart';
+import 'package:demo_app/domain/controller/food_details_controller.dart';
 import 'package:demo_app/domain/controller/home_controller.dart';
 import 'package:demo_app/domain/controller/menu_controller.dart';
 import 'package:demo_app/domain/controller/order_controller.dart';
+import 'package:demo_app/domain/controller/profile_controller.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
@@ -51,8 +53,10 @@ Future<void> init() async {
   /// Use Cases
 
   /// Controllers
-  Get.lazyPut(() => DashboardController());
-  Get.lazyPut(() => HomeController());
-  Get.lazyPut(() => MenuController());
-  Get.lazyPut(() => OrderController());
+  Get.lazyPut(() => DashboardController(),fenix: true);
+  Get.lazyPut(() => HomeController(),fenix: true);
+  Get.lazyPut(() => MenuController(),fenix: true);
+  Get.lazyPut(() => OrderController(),fenix: true);
+  Get.lazyPut(() => ProfileController(),fenix: true);
+  Get.lazyPut(() => FoodDetailsController(),fenix: true);
 }

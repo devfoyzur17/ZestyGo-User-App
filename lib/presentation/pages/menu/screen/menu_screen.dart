@@ -1,3 +1,4 @@
+import 'package:demo_app/presentation/routes/app_routes.dart';
 import 'package:flutter/material.dart' hide MenuController;
 import 'package:get/get.dart';
 import 'package:demo_app/domain/controller/menu_controller.dart';
@@ -141,63 +142,71 @@ class MenuScreen extends StatelessWidget {
       ),
       itemBuilder: (context, index) {
         var food = controller.foodItems[index];
-        return Container(
-          decoration: BoxDecoration(
-            color: AppConstColor.cardColor,
-            borderRadius: BorderRadius.circular(Dimensions.RADIUS_LARGE),
-            boxShadow: [
-              BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(Dimensions.RADIUS_LARGE),
-                  ),
-                  child: Image.network(
-                    food['image'],
-                    fit: BoxFit.cover,
-                    width: double.infinity,
+        return InkWell(
+          onTap: () {
+            Get.toNamed(RouteName.FOOD_DETAILS_SCREEN);
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              color: AppConstColor.cardColor,
+              borderRadius: BorderRadius.circular(Dimensions.RADIUS_LARGE),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(Dimensions.RADIUS_LARGE),
+                    ),
+                    child: Image.network(
+                      food['image'],
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                    ),
                   ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(Dimensions.PADDING_SIZE_SMALL),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      food['name'],
-                      style: bodyMedium(
-                        context,
-                      )?.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.star,
-                          color: AppConstColor.primaryColor,
-                          size: 14,
-                        ),
-                        const SizedBox(width: 4),
-                        Text("${food['rating']}", style: caption(context)),
-                        const Spacer(),
-                        Text(
-                          "৳${food['price']}",
-                          style: bodyMedium(
-                            context,
-                          )?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                  ],
+                Padding(
+                  padding: const EdgeInsets.all(Dimensions.PADDING_SIZE_SMALL),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        food['name'],
+                        style: bodyMedium(
+                          context,
+                        )?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.star,
+                            color: AppConstColor.primaryColor,
+                            size: 14,
+                          ),
+                          const SizedBox(width: 4),
+                          Text("${food['rating']}", style: caption(context)),
+                          const Spacer(),
+                          Text(
+                            "৳${food['price']}",
+                            style: bodyMedium(
+                              context,
+                            )?.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
