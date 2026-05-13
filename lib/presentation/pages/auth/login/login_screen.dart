@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../../domain/controller/auth_controller.dart';
 import '../../../const/app_const_theme.dart';
 import '../../../routes/app_routes.dart';
-import 'login_controller.dart';
 import 'widgets/auth_footer.dart';
 import 'widgets/auth_primary_button.dart';
 import 'widgets/auth_text_field.dart';
 
-class LoginScreen extends GetView<LoginController> {
+class LoginScreen extends GetView<AuthController> {
   const LoginScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    Get.put(LoginController());
+    if (!Get.isRegistered<AuthController>()) {
+      Get.put(AuthController());
+    }
     final Size screenSize = MediaQuery.sizeOf(context);
     final double topSpacing = screenSize.height * 0.18;
 
@@ -26,8 +28,8 @@ class LoginScreen extends GetView<LoginController> {
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: ConstrainedBox(
               constraints: BoxConstraints(
-                minHeight: screenSize.height -
-                    MediaQuery.paddingOf(context).vertical,
+                minHeight:
+                    screenSize.height - MediaQuery.paddingOf(context).vertical,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -36,11 +38,11 @@ class LoginScreen extends GetView<LoginController> {
                   Center(
                     child: Text(
                       'Login',
-                      style:
-                          Theme.of(context).textTheme.headlineLarge!.copyWith(
-                                color: AppConstColor.textBlackColor,
-                                fontWeight: FontWeight.w700,
-                              ),
+                      style: Theme.of(context).textTheme.headlineLarge!
+                          .copyWith(
+                            color: AppConstColor.textBlackColor,
+                            fontWeight: FontWeight.w700,
+                          ),
                     ),
                   ),
                   const SizedBox(height: 32),

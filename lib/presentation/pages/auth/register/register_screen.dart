@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../../domain/controller/auth_controller.dart';
 import '../../../const/app_const_theme.dart';
 import '../../../routes/app_routes.dart';
 import '../login/widgets/auth_footer.dart';
 import '../login/widgets/auth_primary_button.dart';
 import '../login/widgets/auth_text_field.dart';
-import 'register_controller.dart';
 
-class RegisterScreen extends GetView<RegisterController> {
+class RegisterScreen extends GetView<AuthController> {
   const RegisterScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    Get.put(RegisterController());
+    if (!Get.isRegistered<AuthController>()) {
+      Get.put(AuthController());
+    }
     final Size screenSize = MediaQuery.sizeOf(context);
     final double topSpacing = screenSize.height * 0.16;
 

@@ -1,4 +1,5 @@
 import 'package:demo_app/presentation/const/app_const_assets.dart';
+import 'package:demo_app/presentation/routes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -78,55 +79,42 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  /// Orange Gradient Promo Banner
+  /// Single Image Promo Banner
+  /// This version uses a single flattened image that already contains the text.
   Widget _buildPromoBanner() {
-    return Container(
-      width: double.infinity,
-      height: 140,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(Dimensions.RADIUS_LARGE),
-        gradient: const LinearGradient(
-          colors: [AppConstColor.primaryColor, AppConstColor.splashYellow],
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-        ),
-      ),
-      child: Stack(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(Dimensions.PADDING_SIZE_LARGE),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text(
-                  "30% OFF",
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: AppConstColor.textWhiteColor,
-                  ),
-                ),
-                Text(
-                  "On all burger sets",
-                  style: TextStyle(
-                    fontSize: Dimensions.FONT_SIZE_LARGE,
-                    color: AppConstColor.textWhiteColor,
-                  ),
-                ),
-              ],
+    return ClipRRect(
+      // Applies the professional rounded corners from your dimensions file
+      borderRadius: BorderRadius.circular(Dimensions.RADIUS_LARGE),
+      child: Image.network(
+        'https://img.freepik.com/free-vector/flat-food-sale-background_23-2149167390.jpg', // Placeholder: Replace with your actual banner URL
+        width: double.infinity,
+        height: 150, // Standard height for promo banners
+        fit: BoxFit
+            .cover, // Ensures the banner fills the width without distortion
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          // Shimmer-like placeholder while the image loads
+          return Container(
+            height: 150,
+            width: double.infinity,
+            color: AppConstColor.dividerColor.withOpacity(0.5),
+          );
+        },
+        errorBuilder: (context, error, stackTrace) {
+          // Professional fallback if the network image fails to load
+          return Container(
+            height: 150,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: AppConstColor.primaryColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(Dimensions.RADIUS_LARGE),
             ),
-          ),
-          Positioned(
-            right: -10,
-            top: 0,
-            bottom: 0,
-            child: Image.network(
-              'https://img.freepik.com/free-photo/double-hamburger-isolated-white-background-fresh-burger-fast-food-with-beef-cheese_90220-1092.jpg',
-              fit: BoxFit.contain,
+            child: const Icon(
+              Icons.image_not_supported,
+              color: AppConstColor.primaryColor,
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
@@ -208,63 +196,71 @@ class HomeScreen extends StatelessWidget {
       ),
       itemBuilder: (context, index) {
         var food = controller.foodItems[index];
-        return Container(
-          decoration: BoxDecoration(
-            color: AppConstColor.cardColor,
-            borderRadius: BorderRadius.circular(Dimensions.RADIUS_LARGE),
-            boxShadow: [
-              BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(Dimensions.RADIUS_LARGE),
-                  ),
-                  child: Image.network(
-                    food['image'],
-                    fit: BoxFit.cover,
-                    width: double.infinity,
+        return InkWell(
+          onTap: () {
+            Get.toNamed(RouteName.FOOD_DETAILS_SCREEN);
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              color: AppConstColor.cardColor,
+              borderRadius: BorderRadius.circular(Dimensions.RADIUS_LARGE),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(Dimensions.RADIUS_LARGE),
+                    ),
+                    child: Image.network(
+                      food['image'],
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                    ),
                   ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(Dimensions.PADDING_SIZE_SMALL),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      food['name'],
-                      style: bodyMedium(
-                        context,
-                      )?.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.star,
-                          color: AppConstColor.primaryColor,
-                          size: 14,
-                        ),
-                        const SizedBox(width: 4),
-                        Text("${food['rating']}", style: caption(context)),
-                        const Spacer(),
-                        Text(
-                          "৳${food['price']}",
-                          style: bodyMedium(
-                            context,
-                          )?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                  ],
+                Padding(
+                  padding: const EdgeInsets.all(Dimensions.PADDING_SIZE_SMALL),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        food['name'],
+                        style: bodyMedium(
+                          context,
+                        )?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.star,
+                            color: AppConstColor.primaryColor,
+                            size: 14,
+                          ),
+                          const SizedBox(width: 4),
+                          Text("${food['rating']}", style: caption(context)),
+                          const Spacer(),
+                          Text(
+                            "৳${food['price']}",
+                            style: bodyMedium(
+                              context,
+                            )?.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },

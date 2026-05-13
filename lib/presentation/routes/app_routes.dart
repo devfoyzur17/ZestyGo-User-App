@@ -6,6 +6,7 @@ abstract class RouteName {
   static const String _REGISTER_SCREEN = "/register";
   static const String _HOME_SCREEN = "/home";
   static const String _DASHBOARD_SCREEN = "/dashboard";
+  static const String _FOOD_DETAILS_SCREEN = "/food-details";
 
 
   static String get SPLASH_SCREEN => _SPLASH_SCREEN;
@@ -13,4 +14,5 @@ abstract class RouteName {
   static String get REGISTER_SCREEN => _REGISTER_SCREEN;
   static String get HOME_SCREEN => _HOME_SCREEN;
   static String get DASHBOARD_SCREEN => _DASHBOARD_SCREEN;
+  static String get FOOD_DETAILS_SCREEN => _FOOD_DETAILS_SCREEN;
 }
