@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:demo_app/domain/controller/dashboard_controller.dart';
 import 'package:demo_app/domain/controller/home_controller.dart';
+import 'package:demo_app/domain/controller/menu_controller.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
@@ -51,4 +52,5 @@ Future<void> init() async {
   /// Controllers
   Get.lazyPut(() => DashboardController());
   Get.lazyPut(() => HomeController());
+  Get.lazyPut(() => MenuController());
 }

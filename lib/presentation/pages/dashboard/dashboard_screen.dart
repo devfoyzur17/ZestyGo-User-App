@@ -1,5 +1,6 @@
 import 'package:demo_app/presentation/const/app_const_assets.dart';
 import 'package:demo_app/presentation/pages/home/screen/home_screen.dart';
+import 'package:demo_app/presentation/pages/menu/screen/menu_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../domain/controller/dashboard_controller.dart';
@@ -14,7 +15,7 @@ class DashboardScreen extends StatelessWidget {
     // List of screens corresponding to each tab
     final List<Widget> screens = [
       const HomeScreen(),
-      const Center(child: Text("Menu Screen")),
+      const MenuScreen(),
       const Center(child: Text("Orders Screen")),
       const Center(child: Text("Profile Screen")),
     ];

@@ -78,55 +78,42 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  /// Orange Gradient Promo Banner
+  /// Single Image Promo Banner
+  /// This version uses a single flattened image that already contains the text.
   Widget _buildPromoBanner() {
-    return Container(
-      width: double.infinity,
-      height: 140,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(Dimensions.RADIUS_LARGE),
-        gradient: const LinearGradient(
-          colors: [AppConstColor.primaryColor, AppConstColor.splashYellow],
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-        ),
-      ),
-      child: Stack(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(Dimensions.PADDING_SIZE_LARGE),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text(
-                  "30% OFF",
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: AppConstColor.textWhiteColor,
-                  ),
-                ),
-                Text(
-                  "On all burger sets",
-                  style: TextStyle(
-                    fontSize: Dimensions.FONT_SIZE_LARGE,
-                    color: AppConstColor.textWhiteColor,
-                  ),
-                ),
-              ],
+    return ClipRRect(
+      // Applies the professional rounded corners from your dimensions file
+      borderRadius: BorderRadius.circular(Dimensions.RADIUS_LARGE),
+      child: Image.network(
+        'https://img.freepik.com/free-vector/flat-food-sale-background_23-2149167390.jpg', // Placeholder: Replace with your actual banner URL
+        width: double.infinity,
+        height: 150, // Standard height for promo banners
+        fit: BoxFit
+            .cover, // Ensures the banner fills the width without distortion
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          // Shimmer-like placeholder while the image loads
+          return Container(
+            height: 150,
+            width: double.infinity,
+            color: AppConstColor.dividerColor.withOpacity(0.5),
+          );
+        },
+        errorBuilder: (context, error, stackTrace) {
+          // Professional fallback if the network image fails to load
+          return Container(
+            height: 150,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: AppConstColor.primaryColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(Dimensions.RADIUS_LARGE),
             ),
-          ),
-          Positioned(
-            right: -10,
-            top: 0,
-            bottom: 0,
-            child: Image.network(
-              'https://img.freepik.com/free-photo/double-hamburger-isolated-white-background-fresh-burger-fast-food-with-beef-cheese_90220-1092.jpg',
-              fit: BoxFit.contain,
+            child: const Icon(
+              Icons.image_not_supported,
+              color: AppConstColor.primaryColor,
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
