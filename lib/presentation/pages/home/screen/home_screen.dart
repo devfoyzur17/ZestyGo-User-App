@@ -18,39 +18,60 @@ class HomeScreen extends StatelessWidget {
       builder: (controller) {
         return Scaffold(
           backgroundColor: AppConstColor.backgroundGray,
-          body: SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(Dimensions.PADDING_SIZE_DEFAULT),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildHeader(context),
-                  const SizedBox(height: Dimensions.FREE_SIZE_EXTRA_LARGE),
-                  _buildPromoBanner(),
-                  const SizedBox(height: Dimensions.FREE_SIZE_EXTRA_LARGE),
-
-                  // --- Dynamic Category Segment Container ---
-                  controller.isCategoryLoading
-                      ? const SizedBox(
-                          height: 90,
-                          child: Center(child: CircularProgressIndicator()),
-                        )
-                      : _buildCategoryList(controller),
-
-                  const SizedBox(height: Dimensions.FREE_SIZE_OVER_EXTRA_LARGE),
-                  _buildSectionTitle(
-                    context,
-                    "Popular Foods",
-                    showSeeAll: false,
+          // Master Loader layout conditionally handling the entire screen content
+          body: controller.isLoading
+              ? const Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      AppConstColor.primaryColor,
+                    ),
                   ),
-                  _buildFoodGrid(controller, isPopular: true),
-                  const SizedBox(height: Dimensions.FREE_SIZE_EXTRA_LARGE),
-                  _buildSectionTitle(context, "All Foods", showSeeAll: true),
-                  _buildFoodGrid(controller, isPopular: false),
-                ],
-              ),
-            ),
-          ),
+                )
+              : SafeArea(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(
+                      Dimensions.PADDING_SIZE_DEFAULT,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildHeader(context),
+                        const SizedBox(
+                          height: Dimensions.FREE_SIZE_EXTRA_LARGE,
+                        ),
+                        _buildPromoBanner(),
+                        const SizedBox(
+                          height: Dimensions.FREE_SIZE_EXTRA_LARGE,
+                        ),
+
+                        // Categories Horizontal list
+                        _buildCategoryList(controller),
+                        const SizedBox(
+                          height: Dimensions.FREE_SIZE_OVER_EXTRA_LARGE,
+                        ),
+
+                        // Popular Foods
+                        _buildSectionTitle(
+                          context,
+                          "Popular Foods",
+                          showSeeAll: false,
+                        ),
+                        _buildFoodGrid(controller, isPopular: true),
+                        const SizedBox(
+                          height: Dimensions.FREE_SIZE_EXTRA_LARGE,
+                        ),
+
+                        // All Foods
+                        _buildSectionTitle(
+                          context,
+                          "All Foods",
+                          showSeeAll: true,
+                        ),
+                        _buildFoodGrid(controller, isPopular: false),
+                      ],
+                    ),
+                  ),
+                ),
         );
       },
     );
@@ -135,14 +156,13 @@ class HomeScreen extends StatelessWidget {
       height: 90,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 24),
+        padding: const EdgeInsets.symmetric(horizontal: 4),
         itemCount: controller.categories.length,
         separatorBuilder: (_, __) =>
             const SizedBox(width: Dimensions.PADDING_SIZE_DEFAULT),
         itemBuilder: (context, index) {
           var item = controller.categories[index];
 
-          // These keys now store pure strings from the controller mapping step
           String categoryName = item['name'] ?? '';
           String categoryImage = item['image'] ?? '';
 
@@ -222,10 +242,23 @@ class HomeScreen extends StatelessWidget {
 
   /// Food Grid
   Widget _buildFoodGrid(HomeController controller, {required bool isPopular}) {
+    List<Map<String, dynamic>> targetedList = isPopular
+        ? controller.popularFoods
+        : controller.allFoods;
+
+    if (targetedList.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 20),
+          child: Text("No items available here yet."),
+        ),
+      );
+    }
+
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: controller.foodItems.length,
+      itemCount: targetedList.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         mainAxisSpacing: Dimensions.PADDING_SIZE_DEFAULT,
@@ -233,7 +266,9 @@ class HomeScreen extends StatelessWidget {
         mainAxisExtent: 220,
       ),
       itemBuilder: (context, index) {
-        var food = controller.foodItems[index];
+        var food = targetedList[index];
+        String foodImage = food['image'] ?? '';
+
         return InkWell(
           onTap: () {
             Get.toNamed(RouteName.FOOD_DETAILS_SCREEN);
@@ -257,11 +292,23 @@ class HomeScreen extends StatelessWidget {
                     borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(Dimensions.RADIUS_LARGE),
                     ),
-                    child: Image.network(
-                      food['image'],
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                    ),
+                    child: foodImage.isNotEmpty
+                        ? Image.network(
+                            foodImage,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Icon(
+                                  Icons.broken_image,
+                                  size: 50,
+                                  color: Colors.grey,
+                                ),
+                          )
+                        : const Icon(
+                            Icons.fastfood,
+                            size: 50,
+                            color: Colors.grey,
+                          ),
                   ),
                 ),
                 Padding(
@@ -270,10 +317,12 @@ class HomeScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        food['name'],
+                        food['name'] ?? '',
                         style: bodyMedium(
                           context,
                         )?.copyWith(fontWeight: FontWeight.bold),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
                       Row(
@@ -284,10 +333,13 @@ class HomeScreen extends StatelessWidget {
                             size: 14,
                           ),
                           const SizedBox(width: 4),
-                          Text("${food['rating']}", style: caption(context)),
+                          Text(
+                            "${food['rating'] ?? 0.0}",
+                            style: caption(context),
+                          ),
                           const Spacer(),
                           Text(
-                            "৳${food['price']}",
+                            "৳${food['price'] ?? 0.0}",
                             style: bodyMedium(
                               context,
                             )?.copyWith(fontWeight: FontWeight.bold),
