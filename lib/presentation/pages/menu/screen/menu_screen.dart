@@ -13,6 +13,7 @@ class MenuScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetBuilder<MenuController>(
+      init: MenuController(), // Ensure initialization hook is active
       builder: (controller) {
         return Scaffold(
           backgroundColor: AppConstColor.backgroundGray,
@@ -33,17 +34,26 @@ class MenuScreen extends StatelessWidget {
                   const SizedBox(height: Dimensions.FREE_SIZE_DEFAULT),
 
                   // Horizontal Category Filter
-                  _buildCategoryFilter(controller),
-                  const SizedBox(height: Dimensions.FREE_SIZE_EXTRA_LARGE),
+                  controller.isCategoryLoading
+                      ? const SizedBox(
+                          height: 40,
+                          child: Center(child: CircularProgressIndicator()),
+                        )
+                      : _buildCategoryFilter(controller),
 
-                  // Popular Food Section
-                  _buildSectionHeader(context, "Popular Food"),
-                  _buildFoodGrid(controller),
                   const SizedBox(height: Dimensions.FREE_SIZE_EXTRA_LARGE),
 
                   // All Foods Section
-                  _buildSectionHeader(context, "All Foods", showSeeAll: true),
-                  _buildFoodGrid(controller),
+                  _buildSectionHeader(context, "All Foods", showSeeAll: false),
+
+                  controller.isFoodLoading
+                      ? const Center(
+                          child: Padding(
+                            padding: EdgeInsets.only(top: 40),
+                            child: CircularProgressIndicator(),
+                          ),
+                        )
+                      : _buildFoodGrid(controller),
                 ],
               ),
             ),
@@ -55,6 +65,10 @@ class MenuScreen extends StatelessWidget {
 
   /// Horizontal scrollable chips for category selection
   Widget _buildCategoryFilter(MenuController controller) {
+    if (controller.categories.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return SizedBox(
       height: 40,
       child: ListView.separated(
@@ -85,7 +99,7 @@ class MenuScreen extends StatelessWidget {
               ),
               child: Center(
                 child: Text(
-                  controller.categories[index],
+                  controller.categories[index]['name'] ?? '',
                   style: bodyMedium(context)?.copyWith(
                     color: isSelected
                         ? AppConstColor.textWhiteColor
@@ -128,12 +142,21 @@ class MenuScreen extends StatelessWidget {
     );
   }
 
-  /// Reusable 2-column food grid
+  /// Reusable 2-column food grid mapped to dynamic categories
   Widget _buildFoodGrid(MenuController controller) {
+    if (controller.foodItems.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.only(top: 40),
+          child: Text("No items available under this category."),
+        ),
+      );
+    }
+
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: 2, // Following the design pattern
+      itemCount: controller.foodItems.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         mainAxisSpacing: Dimensions.PADDING_SIZE_DEFAULT,
@@ -142,6 +165,8 @@ class MenuScreen extends StatelessWidget {
       ),
       itemBuilder: (context, index) {
         var food = controller.foodItems[index];
+        String foodImage = food['image'] ?? '';
+
         return InkWell(
           onTap: () {
             Get.toNamed(RouteName.FOOD_DETAILS_SCREEN);
@@ -161,14 +186,28 @@ class MenuScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(Dimensions.RADIUS_LARGE),
-                    ),
-                    child: Image.network(
-                      food['image'],
-                      fit: BoxFit.cover,
-                      width: double.infinity,
+                  child: Center(
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(Dimensions.RADIUS_LARGE),
+                      ),
+                      child: foodImage.isNotEmpty
+                          ? Image.network(
+                              foodImage,
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(
+                                    Icons.broken_image,
+                                    size: 50,
+                                    color: Colors.grey,
+                                  ),
+                            )
+                          : const Icon(
+                              Icons.fastfood,
+                              size: 50,
+                              color: Colors.grey,
+                            ),
                     ),
                   ),
                 ),
@@ -178,10 +217,12 @@ class MenuScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        food['name'],
+                        food['name'] ?? '',
                         style: bodyMedium(
                           context,
                         )?.copyWith(fontWeight: FontWeight.bold),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
                       Row(
@@ -192,10 +233,13 @@ class MenuScreen extends StatelessWidget {
                             size: 14,
                           ),
                           const SizedBox(width: 4),
-                          Text("${food['rating']}", style: caption(context)),
+                          Text(
+                            "${food['rating'] ?? 0.0}",
+                            style: caption(context),
+                          ),
                           const Spacer(),
                           Text(
-                            "৳${food['price']}",
+                            "৳${food['price'] ?? 0.0}",
                             style: bodyMedium(
                               context,
                             )?.copyWith(fontWeight: FontWeight.bold),

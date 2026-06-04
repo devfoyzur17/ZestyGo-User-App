@@ -98,21 +98,19 @@ class AppConstColor {
   // Main Brand Color
   static const Color primaryColor = Color(0xFFFEBC2F);
 
-  static const MaterialColor primaryColorColorSwatch = MaterialColor(
-    0xFFFEBC2F,
-    <int, Color>{
-      50: Color(0xFFFFF8E6),
-      100: Color(0xFFFFEDB0),
-      200: Color(0xFFFFE17A),
-      300: Color(0xFFFFD544),
-      400: Color(0xFFFECB1F),
-      500: Color(0xFFFEBC2F),
-      600: Color(0xFFE6A800),
-      700: Color(0xFFCC9600),
-      800: Color(0xFFB38300),
-      900: Color(0xFF806000),
-    },
-  );
+  static const MaterialColor primaryColorColorSwatch =
+      MaterialColor(0xFFFEBC2F, <int, Color>{
+        50: Color(0xFFFFF8E6),
+        100: Color(0xFFFFEDB0),
+        200: Color(0xFFFFE17A),
+        300: Color(0xFFFFD544),
+        400: Color(0xFFFECB1F),
+        500: Color(0xFFFEBC2F),
+        600: Color(0xFFE6A800),
+        700: Color(0xFFCC9600),
+        800: Color(0xFFB38300),
+        900: Color(0xFF806000),
+      });
 
   // Backgrounds
   static const Color backgroundWhite = Color(0xFFFFFFFF);
@@ -140,18 +138,18 @@ class AppConstColor {
 
   // Neutral Gray Swatch
   static const MaterialColor grayPrimaryColorSwatch =
-  MaterialColor(0xFF9CA3AF, <int, Color>{
-    50: Color(0xFFF9FAFB),
-    100: Color(0xFFF3F4F6),
-    200: Color(0xFFE5E7EB),
-    300: Color(0xFFD1D5DB),
-    400: Color(0xFF9CA3AF),
-    500: Color(0xFF6B7280),
-    600: Color(0xFF4B5563),
-    700: Color(0xFF374151),
-    800: Color(0xFF1F2937),
-    900: Color(0xFF111827),
-  });
+      MaterialColor(0xFF9CA3AF, <int, Color>{
+        50: Color(0xFFF9FAFB),
+        100: Color(0xFFF3F4F6),
+        200: Color(0xFFE5E7EB),
+        300: Color(0xFFD1D5DB),
+        400: Color(0xFF9CA3AF),
+        500: Color(0xFF6B7280),
+        600: Color(0xFF4B5563),
+        700: Color(0xFF374151),
+        800: Color(0xFF1F2937),
+        900: Color(0xFF111827),
+      });
 
   // Extra / UI
   static const Color splashYellow = Color(0xFFF8B429);

@@ -1,3 +1,4 @@
+import 'package:demo_app/presentation/const/app_const_dimensions.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../const/app_const_theme.dart';
@@ -34,6 +35,7 @@ class _SplashScreenState extends State<SplashScreen> {
         children: [
           SplashBackground(screenSize: screenSize),
           SplashLogo(size: logoSize),
+
         ],
       ),
     );

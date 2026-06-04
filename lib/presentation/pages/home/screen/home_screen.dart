@@ -28,7 +28,15 @@ class HomeScreen extends StatelessWidget {
                   const SizedBox(height: Dimensions.FREE_SIZE_EXTRA_LARGE),
                   _buildPromoBanner(),
                   const SizedBox(height: Dimensions.FREE_SIZE_EXTRA_LARGE),
-                  _buildCategoryList(controller),
+
+                  // --- Dynamic Category Segment Container ---
+                  controller.isCategoryLoading
+                      ? const SizedBox(
+                          height: 90,
+                          child: Center(child: CircularProgressIndicator()),
+                        )
+                      : _buildCategoryList(controller),
+
                   const SizedBox(height: Dimensions.FREE_SIZE_OVER_EXTRA_LARGE),
                   _buildSectionTitle(
                     context,
@@ -80,20 +88,16 @@ class HomeScreen extends StatelessWidget {
   }
 
   /// Single Image Promo Banner
-  /// This version uses a single flattened image that already contains the text.
   Widget _buildPromoBanner() {
     return ClipRRect(
-      // Applies the professional rounded corners from your dimensions file
       borderRadius: BorderRadius.circular(Dimensions.RADIUS_LARGE),
       child: Image.network(
-        'https://img.freepik.com/free-vector/flat-food-sale-background_23-2149167390.jpg', // Placeholder: Replace with your actual banner URL
+        'https://img.freepik.com/free-vector/flat-food-sale-background_23-2149167390.jpg',
         width: double.infinity,
-        height: 150, // Standard height for promo banners
-        fit: BoxFit
-            .cover, // Ensures the banner fills the width without distortion
+        height: 150,
+        fit: BoxFit.cover,
         loadingBuilder: (context, child, loadingProgress) {
           if (loadingProgress == null) return child;
-          // Shimmer-like placeholder while the image loads
           return Container(
             height: 150,
             width: double.infinity,
@@ -101,7 +105,6 @@ class HomeScreen extends StatelessWidget {
           );
         },
         errorBuilder: (context, error, stackTrace) {
-          // Professional fallback if the network image fails to load
           return Container(
             height: 150,
             width: double.infinity,
@@ -121,15 +124,28 @@ class HomeScreen extends StatelessWidget {
 
   /// Horizontal Category List
   Widget _buildCategoryList(HomeController controller) {
+    if (controller.categories.isEmpty) {
+      return const SizedBox(
+        height: 90,
+        child: Center(child: Text('No categories found.')),
+      );
+    }
+
     return SizedBox(
       height: 90,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 24),
         itemCount: controller.categories.length,
         separatorBuilder: (_, __) =>
             const SizedBox(width: Dimensions.PADDING_SIZE_DEFAULT),
         itemBuilder: (context, index) {
           var item = controller.categories[index];
+
+          // These keys now store pure strings from the controller mapping step
+          String categoryName = item['name'] ?? '';
+          String categoryImage = item['image'] ?? '';
+
           return Column(
             children: [
               Container(
@@ -146,10 +162,32 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: Image.network(item['image']!, height: 35, width: 35),
+                child: categoryImage.isNotEmpty
+                    ? Image.network(
+                        categoryImage,
+                        height: 35,
+                        width: 35,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Icon(
+                              Icons.restaurant,
+                              size: 35,
+                              color: Colors.grey,
+                            ),
+                      )
+                    : const Icon(
+                        Icons.restaurant,
+                        size: 35,
+                        color: Colors.grey,
+                      ),
               ),
               const SizedBox(height: Dimensions.PADDING_SIZE_EXTRA_SMALL),
-              Text(item['name']!, style: bodyMedium(context)),
+              Text(
+                categoryName,
+                style: bodyMedium(context),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ],
           );
         },
@@ -182,17 +220,17 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  /// Responsive Food Grid
+  /// Food Grid
   Widget _buildFoodGrid(HomeController controller, {required bool isPopular}) {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: 2, // Fixed for demo based on image
+      itemCount: controller.foodItems.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         mainAxisSpacing: Dimensions.PADDING_SIZE_DEFAULT,
         crossAxisSpacing: Dimensions.PADDING_SIZE_DEFAULT,
-        mainAxisExtent: 220, // Manual height for responsiveness
+        mainAxisExtent: 220,
       ),
       itemBuilder: (context, index) {
         var food = controller.foodItems[index];

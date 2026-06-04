@@ -110,7 +110,7 @@ class OrderScreen extends StatelessWidget {
               ClipRRect(
                 borderRadius: BorderRadius.circular(Dimensions.RADIUS_DEFAULT),
                 child: Image.network(
-                  'https://img.freepik.com/free-photo/view-delicious-veggie-burger_23-2150170685.jpg',
+                  'https://img.freepik.com/free-photo/delicious-burger-with-fresh-ingredients_23-2150857908.jpg',
                   width: 80,
                   height: 80,
                   fit: BoxFit.cover,

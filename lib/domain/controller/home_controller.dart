@@ -1,23 +1,72 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 
 class HomeController extends GetxController {
-  // Example list for categories
-  final List<Map<String, String>> categories = [
-    {'name': 'Cheese', 'image': 'https://cdn-icons-png.flaticon.com/512/2304/2304880.png'},
-    {'name': 'Chicken', 'image': 'https://cdn-icons-png.flaticon.com/512/1046/1046761.png'},
-    {'name': 'Veggie', 'image': 'https://cdn-icons-png.flaticon.com/512/2325/2325000.png'},
-    {'name': 'Ham', 'image': 'https://cdn-icons-png.flaticon.com/512/3143/3143640.png'},
-  ];
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  // Example list for food items
+  List<Map<String, dynamic>> categories = [];
+  bool isCategoryLoading = false;
+
+  // Static dummy items for foods (can be updated dynamically later)
   final List<Map<String, dynamic>> foodItems = [
-    {'name': 'Cheeseburger', 'price': 12.50, 'rating': 4.8, 'image': 'https://img.freepik.com/free-photo/delicious-burger-with-fresh-ingredients_23-2150857908.jpg'},
-    {'name': 'Veggie Burger', 'price': 12.50, 'rating': 4.5, 'image': 'https://img.freepik.com/free-photo/view-delicious-veggie-burger_23-2150170685.jpg'},
+    {
+      'name': 'Cheeseburger',
+      'price': 12.50,
+      'rating': 4.8,
+      'image': 'https://img.freepik.com/free-photo/delicious-burger-with-fresh-ingredients_23-2150857908.jpg',
+    },
+    {
+      'name': 'Veggie Burger',
+      'price': 12.50,
+      'rating': 4.5,
+      'image': 'https://img.freepik.com/free-photo/delicious-burger-with-fresh-ingredients_23-2150857908.jpg',
+    },
   ];
 
   @override
   void onInit() {
     super.onInit();
-    // Fetch data here if needed
+    fetchCategories();
+  }
+
+  Future<void> fetchCategories() async {
+    try {
+      isCategoryLoading = true;
+      update();
+
+      QuerySnapshot snapshot = await _db
+          .collection('restaurants')
+          .doc('C8ESI8GgEOLG2jMYcuET')
+          .collection('categories')
+          .get();
+
+      categories.clear();
+
+      for (var doc in snapshot.docs) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+
+        // 1. Safely extract nested image URL from the map object
+        String fetchedImageUrl = '';
+        if (data['image'] != null && data['image'] is Map) {
+          fetchedImageUrl = data['image']['url'] ?? '';
+        }
+
+        // 2. Map fields according to your exact Firestore screenshot names
+        categories.add({
+          'id': doc.id,
+          'name': data['categoryName'] ?? '', // Using categoryName from database
+          'image': fetchedImageUrl,          // Extracted nested image URL string
+        });
+      }
+    } catch (e) {
+      Get.snackbar(
+        "Data Error",
+        "Failed to pull category logs: ${e.toString()}",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } finally {
+      isCategoryLoading = false;
+      update();
+    }
   }
 }
