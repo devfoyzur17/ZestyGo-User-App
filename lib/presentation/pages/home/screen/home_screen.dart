@@ -40,7 +40,7 @@ class HomeScreen extends StatelessWidget {
                         const SizedBox(
                           height: Dimensions.FREE_SIZE_EXTRA_LARGE,
                         ),
-                        _buildPromoBanner(),
+                        _buildPromoBanner(controller),
                         const SizedBox(
                           height: Dimensions.FREE_SIZE_EXTRA_LARGE,
                         ),
@@ -145,13 +145,41 @@ class HomeScreen extends StatelessWidget {
       },
     );
   }
+  /// Dynamic Promo Banner Connected with HomeController
+  Widget _buildPromoBanner(HomeController controller) {
+    String bannerImage = controller.promoBannerUrl.trim();
 
-  /// Single Image Promo Banner
-  Widget _buildPromoBanner() {
+    if (bannerImage.isEmpty) {
+      return Container(
+        height: 150,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: AppConstColor.primaryColor.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(Dimensions.RADIUS_LARGE),
+        ),
+        child: const Center(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.fastfood, color: AppConstColor.primaryColor),
+              SizedBox(width: 8),
+              Text(
+                "Delicious Foods Await You!",
+                style: TextStyle(
+                  color: AppConstColor.primaryColor,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(Dimensions.RADIUS_LARGE),
       child: Image.network(
-        'https://img.freepik.com/free-vector/flat-food-sale-background_23-2149167390.jpg',
+        bannerImage,
         width: double.infinity,
         height: 150,
         fit: BoxFit.cover,
@@ -161,6 +189,12 @@ class HomeScreen extends StatelessWidget {
             height: 150,
             width: double.infinity,
             color: AppConstColor.dividerColor.withOpacity(0.5),
+            child: const Center(
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(AppConstColor.primaryColor),
+              ),
+            ),
           );
         },
         errorBuilder: (context, error, stackTrace) {

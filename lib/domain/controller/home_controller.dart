@@ -4,12 +4,11 @@ import 'package:get/get.dart';
 class HomeController extends GetxController {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  // Dynamic state arrays
+  String promoBannerUrl = "";
   List<Map<String, dynamic>> categories = [];
   List<Map<String, dynamic>> popularFoods = [];
   List<Map<String, dynamic>> allFoods = [];
 
-  // Central master loading flag for the entire screen
   bool isLoading = true;
 
   @override
@@ -18,13 +17,27 @@ class HomeController extends GetxController {
     fetchHomeData();
   }
 
-  /// Master fetch method to clear arrays and load everything sequentially
   Future<void> fetchHomeData() async {
     try {
       isLoading = true;
-      update(); // Triggers loading screen UI state
+      update();
 
-      // 1. Fetch Root Categories
+      // -------------------------------------------------------------
+      // FIXED: 'banner' সাব-কালেকশন থেকে প্রথম ডকুমেন্ট রিড করার লজিক
+      // -------------------------------------------------------------
+      QuerySnapshot bannerSnapshot = await _db
+          .collection('restaurants')
+          .doc('C8ESI8GgEOLG2jMYcuET')
+          .collection('banner') // সাব-কালেকশন এক্সেস
+          .limit(1) // যেহেতু একটাই ব্যানার ডক আছে
+          .get();
+
+      if (bannerSnapshot.docs.isNotEmpty) {
+        var bannerData = bannerSnapshot.docs.first.data() as Map<String, dynamic>;
+        promoBannerUrl = bannerData['imageUrl'] ?? ""; // ফিল্ডের নাম 'imageUrl'
+      }
+
+      // 2. Fetch Root Categories
       QuerySnapshot categorySnapshot = await _db
           .collection('restaurants')
           .doc('C8ESI8GgEOLG2jMYcuET')
@@ -54,7 +67,7 @@ class HomeController extends GetxController {
         categoryIds.add(doc.id);
       }
 
-      // 2. Fetch Nested Foods Subcollection for Every Category
+      // 3. Fetch Nested Foods Subcollection for Every Category
       for (String catId in categoryIds) {
         QuerySnapshot foodSnapshot = await _db
             .collection('restaurants')
@@ -65,37 +78,29 @@ class HomeController extends GetxController {
             .get();
 
         for (var foodDoc in foodSnapshot.docs) {
-          Map<String, dynamic> foodData =
-              foodDoc.data() as Map<String, dynamic>;
+          Map<String, dynamic> foodData = foodDoc.data() as Map<String, dynamic>;
 
-          // Parsing data using 'ratting' field name from Firestore database schema
-          double ratingValue =
-              double.tryParse(foodData['ratting'].toString()) ?? 0.0;
+          double ratingValue = double.tryParse(foodData['ratting'].toString()) ?? 0.0;
 
-          // Mapping Firestore fields to existing UI property keys
           Map<String, dynamic> completeFoodItem = {
             'id': foodDoc.id,
             'categoryId': catId,
-            'name':
-                foodData['foodName'] ?? '', // Maps 'foodName' from Firestore
+            'name': foodData['foodName'] ?? '',
             'price': double.tryParse(foodData['price'].toString()) ?? 0.0,
             'rating': ratingValue,
-            'image':
-                foodData['foodImage'] ?? '', // Maps 'foodImage' from Firestore
+            'image': foodData['foodImage'] ?? '',
           };
 
           allFoods.add(completeFoodItem);
 
-          // Filtering condition: Items with a rating of 4.0 or higher are considered popular
           if (ratingValue >= 4.0) {
             popularFoods.add(completeFoodItem);
           }
         }
       }
 
-      // 3. Sorting Popular Foods by Rating (Highest to Lowest Order)
-      // b['rating'].compareTo(a['rating']) arranges items in a descending format
       popularFoods.sort((a, b) => b['rating'].compareTo(a['rating']));
+
     } catch (e) {
       Get.snackbar(
         "Database Error",
@@ -104,7 +109,7 @@ class HomeController extends GetxController {
       );
     } finally {
       isLoading = false;
-      update(); // Rebuilds the UI screen layout with data
+      update();
     }
   }
 }
