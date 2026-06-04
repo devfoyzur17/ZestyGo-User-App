@@ -7,6 +7,12 @@ abstract class RouteName {
   static const String _HOME_SCREEN = "/home";
   static const String _DASHBOARD_SCREEN = "/dashboard";
   static const String _FOOD_DETAILS_SCREEN = "/food-details";
+  static const String _CART_SCREEN = "/cart";
+  static const String _CHECKOUT_SCREEN = "/checkout";
+  static const String _ORDER_SUCCESS_SCREEN = "/order_success";
+  static const String _ORDER_SCREEN = "/order";
+  static const String _SUPPORT_SCREEN = "/support";
+  static const String _PRIVACY_SCREEN = "/privacy";
 
 
   static String get SPLASH_SCREEN => _SPLASH_SCREEN;
@@ -15,4 +21,10 @@ abstract class RouteName {
   static String get HOME_SCREEN => _HOME_SCREEN;
   static String get DASHBOARD_SCREEN => _DASHBOARD_SCREEN;
   static String get FOOD_DETAILS_SCREEN => _FOOD_DETAILS_SCREEN;
+  static String get CART_SCREEN => _CART_SCREEN;
+  static String get CHECKOUT_SCREEN => _CHECKOUT_SCREEN;
+  static String get ORDER_SUCCESS_SCREEN => _ORDER_SUCCESS_SCREEN;
+  static String get ORDER_SCREEN => _ORDER_SCREEN;
+  static String get SUPPORT_SCREEN => _SUPPORT_SCREEN;
+  static String get PRIVACY_SCREEN => _PRIVACY_SCREEN;
 }

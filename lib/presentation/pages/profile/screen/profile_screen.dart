@@ -1,3 +1,4 @@
+import 'package:demo_app/presentation/routes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -14,6 +15,13 @@ class ProfileScreen extends StatelessWidget {
     return GetBuilder<ProfileController>(
       init: ProfileController(),
       builder: (controller) {
+        // Show indicator overlay while fetching data states from remote networks
+        if (controller.isLoading) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
         return Scaffold(
           backgroundColor: AppConstColor.backgroundGray,
           body: SafeArea(
@@ -32,17 +40,17 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: Dimensions.FREE_SIZE_EXTRA_LARGE),
 
-                  // User Info Card
+                  // Dynamic User Info Card Module
                   _buildProfileCard(context, controller),
                   const SizedBox(height: Dimensions.FREE_SIZE_OVER_EXTRA_LARGE),
 
-                  // Menu Options
+                  // Menu Options Link Items
                   _buildMenuOption(
                     context,
                     icon: Icons.receipt_long_rounded,
                     title: "My Orders",
                     subtitle: "View past & ongoing orders",
-                    onTap: () => controller.onMenuTap("Orders"),
+                    onTap: () => Get.toNamed(RouteName.ORDER_SCREEN),
                   ),
                   const SizedBox(height: Dimensions.FREE_SIZE_DEFAULT),
                   _buildMenuOption(
@@ -50,7 +58,7 @@ class ProfileScreen extends StatelessWidget {
                     icon: Icons.help_outline_rounded,
                     title: "Help & Support",
                     subtitle: "Contact us.",
-                    onTap: () => controller.onMenuTap("Support"),
+                    onTap: () => Get.toNamed(RouteName.SUPPORT_SCREEN),
                   ),
                   const SizedBox(height: Dimensions.FREE_SIZE_DEFAULT),
                   _buildMenuOption(
@@ -58,7 +66,7 @@ class ProfileScreen extends StatelessWidget {
                     icon: Icons.shield_outlined,
                     title: "Privacy Policy",
                     subtitle: "policy details",
-                    onTap: () => controller.onMenuTap("Privacy"),
+                    onTap: () => Get.toNamed(RouteName.PRIVACY_SCREEN),
                   ),
                 ],
               ),
@@ -76,35 +84,65 @@ class ProfileScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppConstColor.cardColor,
         borderRadius: BorderRadius.circular(Dimensions.RADIUS_OVER_EXTRA_LARGE),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10)],
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10),
+        ],
       ),
       child: Column(
         children: [
           Row(
             children: [
-              // Profile Image
-              const CircleAvatar(
+              // Dynamic Profile Image Handler with a default Professional Man Avatar Placeholder
+              CircleAvatar(
                 radius: 35,
-                backgroundImage: NetworkImage('https://img.freepik.com/free-photo/young-man-wearing-suit_23-2149303643.jpg'),
+                backgroundColor: AppConstColor.backgroundGray,
+                backgroundImage: controller.profileImage.isNotEmpty
+                    ? NetworkImage(controller.profileImage)
+                    : const NetworkImage(
+                        'https://cdn-icons-png.flaticon.com/512/3135/3135715.png', // Clear illustration vector of a man profile
+                      ),
               ),
               const SizedBox(width: Dimensions.PADDING_SIZE_DEFAULT),
 
-              // Name
+              // Dynamic Name & Email Display Stack Tracker
               Expanded(
-                child: Text(
-                  controller.userName,
-                  style: headline(context)?.copyWith(fontWeight: FontWeight.bold),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      controller.userName,
+                      style: headline(
+                        context,
+                      )?.copyWith(fontWeight: FontWeight.bold),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      controller.userEmail,
+                      style: caption(
+                        context,
+                      )?.copyWith(color: AppConstColor.hintColor),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ),
               ),
 
-              // Edit Button
+              // Edit Action Trigger Button
               GestureDetector(
                 onTap: controller.onEditProfile,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: AppConstColor.primaryColor,
-                    borderRadius: BorderRadius.circular(Dimensions.RADIUS_OVER_EXTRA_LARGE),
+                    borderRadius: BorderRadius.circular(
+                      Dimensions.RADIUS_OVER_EXTRA_LARGE,
+                    ),
                   ),
                   child: Text(
                     "Edit",
@@ -118,14 +156,18 @@ class ProfileScreen extends StatelessWidget {
             ],
           ),
           const Padding(
-            padding: EdgeInsets.symmetric(vertical: Dimensions.PADDING_SIZE_DEFAULT),
+            padding: EdgeInsets.symmetric(
+              vertical: Dimensions.PADDING_SIZE_DEFAULT,
+            ),
             child: Divider(color: AppConstColor.dividerColor),
           ),
 
-          // Orders Statistics Box
+          // Orders Statistics Box - Now live mapping from Firestore aggregates
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: Dimensions.PADDING_SIZE_SMALL),
+            padding: const EdgeInsets.symmetric(
+              vertical: Dimensions.PADDING_SIZE_SMALL,
+            ),
             decoration: BoxDecoration(
               border: Border.all(color: AppConstColor.primaryColor, width: 1),
               borderRadius: BorderRadius.circular(Dimensions.RADIUS_LARGE),
@@ -134,7 +176,9 @@ class ProfileScreen extends StatelessWidget {
               children: [
                 Text(
                   "${controller.totalOrders}",
-                  style: headline(context)?.copyWith(fontWeight: FontWeight.bold, fontSize: 20),
+                  style: headline(
+                    context,
+                  )?.copyWith(fontWeight: FontWeight.bold, fontSize: 20),
                 ),
                 Text("Orders", style: caption(context)),
               ],
@@ -147,17 +191,19 @@ class ProfileScreen extends StatelessWidget {
 
   /// Reusable widget for profile list items
   Widget _buildMenuOption(
-      BuildContext context, {
-        required IconData icon,
-        required String title,
-        required String subtitle,
-        required VoidCallback onTap,
-      }) {
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
     return Container(
       decoration: BoxDecoration(
         color: AppConstColor.cardColor,
         borderRadius: BorderRadius.circular(Dimensions.RADIUS_LARGE),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10)],
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10),
+        ],
       ),
       child: ListTile(
         onTap: onTap,
@@ -173,9 +219,18 @@ class ProfileScreen extends StatelessWidget {
           ),
           child: Icon(icon, color: AppConstColor.textWhiteColor, size: 20),
         ),
-        title: Text(title, style: headline(context)?.copyWith(fontWeight: FontWeight.bold, fontSize: 14)),
+        title: Text(
+          title,
+          style: headline(
+            context,
+          )?.copyWith(fontWeight: FontWeight.bold, fontSize: 14),
+        ),
         subtitle: Text(subtitle, style: caption(context)),
-        trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: AppConstColor.hintColor),
+        trailing: const Icon(
+          Icons.arrow_forward_ios_rounded,
+          size: 16,
+          color: AppConstColor.hintColor,
+        ),
       ),
     );
   }

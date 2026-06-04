@@ -42,7 +42,8 @@ class MenuController extends GetxController {
 
         categories.add({
           'id': doc.id,
-          'name': data['categoryName'] ?? '', // Matching database parameter name
+          'name':
+              data['categoryName'] ?? '', // Matching database parameter name
           'image': fetchedImageUrl,
         });
       }
@@ -63,7 +64,7 @@ class MenuController extends GetxController {
     }
   }
 
-  /// 2. Fetches matching subcollection foods list
+  /// 2. Fetches matching subcollection foods list with exact Firestore keys
   Future<void> fetchFoodsForCategory(String categoryId) async {
     try {
       isFoodLoading = true;
@@ -82,12 +83,17 @@ class MenuController extends GetxController {
       for (var doc in foodSnapshot.docs) {
         Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
 
+        // Parsing using 'ratting' field name from Firestore database schema
+        double ratingValue = double.tryParse(data['ratting'].toString()) ?? 0.0;
+
+        // Mapping Firestore keys to match the layout expectations of MenuScreen and FoodDetailsScreen
         foodItems.add({
           'id': doc.id,
-          'name': data['name'] ?? '',
-          'price': data['price'] ?? 0.0,
-          'rating': data['rating'] ?? 0.0,
-          'image': data['image'] ?? '',
+          'name': data['foodName'] ?? '', // Maps 'foodName' from Firestore
+          'price': double.tryParse(data['price'].toString()) ?? 0.0,
+          'rating': ratingValue,
+          'image': data['foodImage'] ?? '', // Maps 'foodImage' from Firestore
+          'description': data['description'] ?? '',
         });
       }
     } catch (e) {

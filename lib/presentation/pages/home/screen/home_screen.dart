@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../domain/controller/home_controller.dart';
+import '../../../../domain/controller/profile_controller.dart';
 import '../../../const/app_const_dimensions.dart';
 import '../../../const/app_const_theme.dart';
 import '../../../const/styles.dart';
@@ -77,34 +78,71 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  /// User Profile Header Section
+  /// User Profile Header Section Linked Dynamically with ProfileController
   Widget _buildHeader(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(2),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: AppConstColor.dividerColor, width: 1),
-          ),
-          child: CircleAvatar(
-            radius: 25,
-            backgroundColor: AppConstColor.backgroundWhite,
-            child: Image.asset(
-              AppConstAssets.userIcon,
-              color: AppConstColor.textBlackColor,
-            ),
-          ),
-        ),
-        const SizedBox(width: Dimensions.PADDING_SIZE_SMALL),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return GetBuilder<ProfileController>(
+      init: ProfileController(),
+      builder: (profileController) {
+        bool hasProfileImage = profileController.profileImage.trim().isNotEmpty;
+
+        return Row(
           children: [
-            Text("Harry Brook", style: headline(context)),
-            Text("brook@gmail.com", style: caption(context)),
+            // Dynamic Profile Image Avatar Frame
+            Container(
+              padding: const EdgeInsets.all(2),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: AppConstColor.dividerColor, width: 1),
+              ),
+              child: CircleAvatar(
+                radius: 25,
+                backgroundColor: AppConstColor.backgroundWhite,
+                backgroundImage: hasProfileImage
+                    ? NetworkImage(profileController.profileImage)
+                    : null,
+                child: hasProfileImage
+                    ? null
+                    : Padding(
+                        padding: const EdgeInsets.all(4.0),
+                        child: Image.asset(
+                          AppConstAssets.userIcon,
+                          color: AppConstColor.textBlackColor,
+                        ),
+                      ),
+              ),
+            ),
+            const SizedBox(width: Dimensions.PADDING_SIZE_SMALL),
+
+            // Dynamic Identity Texts (Name and Email Stack)
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    profileController.userName == "Loading..."
+                        ? "Loading Name..."
+                        : profileController.userName,
+                    style: headline(
+                      context,
+                    )?.copyWith(fontWeight: FontWeight.bold),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    profileController.userEmail,
+                    style: caption(
+                      context,
+                    )?.copyWith(color: AppConstColor.hintColor),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
           ],
-        ),
-      ],
+        );
+      },
     );
   }
 
@@ -271,7 +309,11 @@ class HomeScreen extends StatelessWidget {
 
         return InkWell(
           onTap: () {
-            Get.toNamed(RouteName.FOOD_DETAILS_SCREEN);
+            Get.toNamed(
+              RouteName.FOOD_DETAILS_SCREEN,
+              arguments:
+                  food, // Transmits the complete dynamic data map smoothly
+            );
           },
           child: Container(
             decoration: BoxDecoration(
