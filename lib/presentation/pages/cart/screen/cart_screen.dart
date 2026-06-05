@@ -14,7 +14,6 @@ class CartScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Relying on a lazy-put global initialization instance lookup pattern
     return GetBuilder<CartController>(
       builder: (controller) {
         return Scaffold(
@@ -24,7 +23,6 @@ class CartScreen extends StatelessWidget {
               ? _buildEmptyStateView(context)
               : Column(
                   children: [
-                    // Scrollable item listing stack content view area
                     Expanded(
                       child: SingleChildScrollView(
                         padding: const EdgeInsets.all(
@@ -42,7 +40,6 @@ class CartScreen extends StatelessWidget {
                       ),
                     ),
 
-                    // Sticky pricing breakdown block matching mockup baseline structure
                     _buildPricingCheckoutPanel(context, controller),
                   ],
                 ),
@@ -51,7 +48,6 @@ class CartScreen extends StatelessWidget {
     );
   }
 
-  /// Renders a friendly fallback message when the state collection array is empty
   Widget _buildEmptyStateView(BuildContext context) {
     return Center(
       child: Column(
@@ -74,7 +70,6 @@ class CartScreen extends StatelessWidget {
     );
   }
 
-  /// Builds custom navigation App Bar with rounded back target action button
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
       backgroundColor: Colors.transparent,
@@ -224,7 +219,6 @@ class CartScreen extends StatelessWidget {
     );
   }
 
-  /// Card widget displaying active package dispatch tracking metrics dynamically
   Widget _buildDeliveryAddressTile(BuildContext context) {
     return GetBuilder<ProfileController>(
       init: ProfileController(),
@@ -330,7 +324,6 @@ class CartScreen extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Checkout Summary Header Row
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [

@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 class MenuController extends GetxController {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  // Real-time parsed reactive storage targets
+
   List<Map<String, dynamic>> categories = [];
   List<Map<String, dynamic>> foodItems = [];
 
@@ -18,7 +18,7 @@ class MenuController extends GetxController {
     fetchCategories();
   }
 
-  /// 1. Fetches root category elements
+
   Future<void> fetchCategories() async {
     try {
       isCategoryLoading = true;
@@ -43,14 +43,14 @@ class MenuController extends GetxController {
         categories.add({
           'id': doc.id,
           'name':
-              data['categoryName'] ?? '', // Matching database parameter name
+              data['categoryName'] ?? '',
           'image': fetchedImageUrl,
         });
       }
 
       isCategoryLoading = false;
 
-      // Automatically fetch foods for the first active category if present
+
       if (categories.isNotEmpty) {
         selectedCategoryIndex = 0;
         await fetchFoodsForCategory(categories[0]['id']);
@@ -64,7 +64,7 @@ class MenuController extends GetxController {
     }
   }
 
-  /// 2. Fetches matching subcollection foods list with exact Firestore keys
+
   Future<void> fetchFoodsForCategory(String categoryId) async {
     try {
       isFoodLoading = true;
@@ -83,16 +83,16 @@ class MenuController extends GetxController {
       for (var doc in foodSnapshot.docs) {
         Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
 
-        // Parsing using 'ratting' field name from Firestore database schema
+
         double ratingValue = double.tryParse(data['ratting'].toString()) ?? 0.0;
 
-        // Mapping Firestore keys to match the layout expectations of MenuScreen and FoodDetailsScreen
+
         foodItems.add({
           'id': doc.id,
-          'name': data['foodName'] ?? '', // Maps 'foodName' from Firestore
+          'name': data['foodName'] ?? '',
           'price': double.tryParse(data['price'].toString()) ?? 0.0,
           'rating': ratingValue,
-          'image': data['foodImage'] ?? '', // Maps 'foodImage' from Firestore
+          'image': data['foodImage'] ?? '',
           'description': data['description'] ?? '',
         });
       }
@@ -104,13 +104,13 @@ class MenuController extends GetxController {
     }
   }
 
-  /// 3. Updates active selection pointer index
+
   void setCategory(int index) {
     if (selectedCategoryIndex == index) return;
     selectedCategoryIndex = index;
     update();
 
-    // Fetch corresponding nested food subcollection items dynamically
+
     String currentCategoryId = categories[index]['id'];
     fetchFoodsForCategory(currentCategoryId);
   }

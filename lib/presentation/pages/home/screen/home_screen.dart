@@ -66,7 +66,7 @@ class HomeScreen extends StatelessWidget {
                         _buildSectionTitle(
                           context,
                           "All Foods",
-                          showSeeAll: true,
+                          showSeeAll: false,
                         ),
                         _buildFoodGrid(controller, isPopular: false),
                       ],

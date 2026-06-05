@@ -14,8 +14,7 @@ class FoodDetailsScreen extends StatelessWidget {
     return GetBuilder<FoodDetailsController>(
       init: FoodDetailsController(),
       builder: (controller) {
-        // Safe guard to hold rendering operations while map arguments parse cleanly
-        if (controller.isLoading) {
+         if (controller.isLoading) {
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           );

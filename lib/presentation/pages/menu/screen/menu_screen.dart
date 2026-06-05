@@ -56,7 +56,7 @@ class MenuScreen extends StatelessWidget {
     );
   }
 
-  /// 1. Category Loading Skeleton: Shimmer ছাড়া ক্লিন ক্যাটালগ চিপস লোডার
+
   Widget _buildCategoryLoadingSkeleton() {
     return SizedBox(
       height: 40,
@@ -93,7 +93,6 @@ class MenuScreen extends StatelessWidget {
     );
   }
 
-  /// 2. Food Grid Loading Skeleton: গ্রিড লেআউট ঠিক রেখে প্রফেশনাল কার্ড লোডার
   Widget _buildFoodGridLoadingSkeleton() {
     return GridView.builder(
       shrinkWrap: true,

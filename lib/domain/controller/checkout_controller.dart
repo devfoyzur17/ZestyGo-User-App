@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // FirebaseAuth ইমপোর্ট করতে হবে
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import '../../../../domain/controller/cart_controller.dart';
 import '../../presentation/pages/order/screen/order_success_screen.dart';
@@ -38,10 +38,8 @@ class CheckoutController extends GetxController {
       isLoading = true;
       update();
 
-      // 1. Get current logged-in user details from Firebase Auth
       User? currentUser = _auth.currentUser;
 
-      // Checking if user is logged in. If not, prevent order placement.
       if (currentUser == null) {
         isLoading = false;
         update();
@@ -55,15 +53,15 @@ class CheckoutController extends GetxController {
 
       DocumentReference orderRef = _firestore.collection('orders').doc();
 
-      // 2. Map payload and inject user profile details securely
+
       Map<String, dynamic> orderPayload = {
         'orderId': orderRef.id,
 
         // --- User Tracking Fields ---
-        'userId': currentUser.uid,                         // Unique User ID from Firebase Auth
-        'userEmail': currentUser.email ?? 'No Email',       // User's email address
-        'userName': currentUser.displayName ?? 'Guest User', // User's name profile parameter
-        // ----------------------------
+        'userId': currentUser.uid,
+        'userEmail': currentUser.email ?? 'No Email',
+        'userName': currentUser.displayName ?? 'Guest User',
+
 
         'paymentMethod': selectedPaymentMethod,
         'totalAmount': totalAmount,
@@ -73,7 +71,7 @@ class CheckoutController extends GetxController {
         'deliveryAddress': {
           'title': 'Home',
           'address': 'Mirpur, Dhaka',
-          'phone': currentUser.phoneNumber ?? '01758695235', // Dynamic fallback if phone is linked
+          'phone': currentUser.phoneNumber ?? '01758695235',
           'expectedTime': '25-35 mins'
         },
         'items': _cartController.cartItems.map((item) => {
@@ -87,7 +85,7 @@ class CheckoutController extends GetxController {
         'status': 'pending',
       };
 
-      // 3. Write payload data to Cloud Firestore document mapping node
+
       await orderRef.set(orderPayload);
 
       _cartController.cartItems.clear();

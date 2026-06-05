@@ -39,7 +39,7 @@ class AuthController extends GetxController {
 
     try {
       isLoading = true;
-      update(); // UI-তে লোডার দেখানোর জন্য
+      update();
 
       // 1. Firebase Auth-e user create
       UserCredential userCredential = await _auth

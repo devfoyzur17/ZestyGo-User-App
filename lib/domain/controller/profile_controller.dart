@@ -11,7 +11,7 @@ class ProfileController extends GetxController {
   String userEmail = "";
   String profileImage = "";
   String homeAddress = "";
-  String userPhone = ""; // <-- ফোন নম্বরের জন্য নতুন ভেরিয়েবল
+  String userPhone = "";
 
   int totalOrders = 0;
   bool isLoading = true;
@@ -22,7 +22,7 @@ class ProfileController extends GetxController {
     fetchUserProfileAndStats();
   }
 
-  /// Fetches documented data logs from Firestore users collection
+
   Future<void> fetchUserProfileAndStats() async {
     try {
       User? currentUser = _auth.currentUser;
@@ -36,11 +36,11 @@ class ProfileController extends GetxController {
         return;
       }
 
-      // Base initialization mapping from Auth context parameters
+
       userEmail = currentUser.email ?? "No Email";
       profileImage = currentUser.photoURL ?? "";
 
-      // 1. Fetch the real dynamic user name, address, and phone saved inside the Firestore document
+
       var userDoc = await _firestore
           .collection('users')
           .doc(currentUser.uid)
@@ -49,14 +49,14 @@ class ProfileController extends GetxController {
       if (userDoc.exists && userDoc.data() != null) {
         userName = userDoc.data()?['name'] ?? "User";
         homeAddress = userDoc.data()?['homeAddress'] ?? "";
-        userPhone = userDoc.data()?['phone'] ?? ""; // <-- ফায়ারস্টোর থেকে ফোন নম্বর রিড করা হলো
+        userPhone = userDoc.data()?['phone'] ?? "";
       } else {
         userName = currentUser.displayName ?? "User";
         homeAddress = "";
         userPhone = "";
       }
 
-      // 2. Query Firestore live streams to trace current orders placed by user context
+
       _firestore
           .collection('orders')
           .where('userId', isEqualTo: currentUser.uid)
@@ -65,7 +65,7 @@ class ProfileController extends GetxController {
             (QuerySnapshot snapshot) {
           totalOrders = snapshot.docs.length;
           isLoading = false;
-          update(); // Re-paint active view bindings instantly
+          update();
         },
         onError: (error) {
           isLoading = false;

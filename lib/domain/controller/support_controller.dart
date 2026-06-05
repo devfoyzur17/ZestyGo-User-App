@@ -11,7 +11,7 @@ class SupportController extends GetxController {
   final TextEditingController messageController = TextEditingController();
   bool isSubmitting = false;
 
-  // Local Static FAQ Data (অফলাইন বা অনলাইন দুইভাবেই হ্যান্ডেল করা যাবে)
+  // Local Static FAQ Data
   List<Map<String, dynamic>> faqs = [
     {
       'question': 'How can I track my live order?',

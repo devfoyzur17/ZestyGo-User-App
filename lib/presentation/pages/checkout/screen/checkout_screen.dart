@@ -75,7 +75,6 @@ class CheckoutScreen extends StatelessWidget {
     );
   }
 
-  /// Builds the delivery tracking parameter context text stack card layout module dynamically
   Widget _buildDeliveryDetailsCard(BuildContext context) {
     // Find existing ProfileController instance to read active user account variables
     return GetBuilder<ProfileController>(
@@ -139,14 +138,12 @@ class CheckoutScreen extends StatelessWidget {
     );
   }
 
-  /// Reusable list component row blueprint helper function targeting informational parameters
-  /// Reusable list component row blueprint helper function targeting informational parameters
   Widget _buildInfoTile(
     BuildContext context,
     IconData icon,
     String title,
     String subtitle, {
-    VoidCallback? onTap, // Optional tap listener argument
+    VoidCallback? onTap,
   }) {
     return InkWell(
       onTap: onTap,
@@ -182,7 +179,7 @@ class CheckoutScreen extends StatelessWidget {
             ),
           ),
           if (onTap !=
-              null) // Only show arrow vector icon if rows are active triggers
+              null)
             const Icon(
               Icons.arrow_forward_ios,
               size: 14,
