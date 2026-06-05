@@ -14,16 +14,23 @@ class FoodDetailsScreen extends StatelessWidget {
     return GetBuilder<FoodDetailsController>(
       init: FoodDetailsController(),
       builder: (controller) {
-        final food = controller.foodDetails;
+        // Safe guard to hold rendering operations while map arguments parse cleanly
+        if (controller.isLoading) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        final food = controller.foodData;
 
         return Scaffold(
           backgroundColor: AppConstColor.backgroundWhite,
           body: Column(
             children: [
-              // Top Image and Header Section
+              // Top descriptive image container component
               _buildTopHeader(context, food),
 
-              // Content Section
+              // Scrollable card context detail layer
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(
@@ -32,9 +39,9 @@ class FoodDetailsScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Title
+                      // Formatted item label title block
                       Text(
-                        food['name'],
+                        food['name'] ?? 'Unknown Item',
                         style: headline(context)?.copyWith(
                           fontSize: Dimensions.FONT_SIZE_OVER_EXTRA_LARGE,
                           fontWeight: FontWeight.bold,
@@ -43,13 +50,16 @@ class FoodDetailsScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: Dimensions.FREE_SIZE_SMALL),
 
-                      // Rating and Orders Row
+                      // Social response indicators tracking row
                       _buildStatsRow(context, food),
                       const SizedBox(height: Dimensions.FREE_SIZE_EXTRA_LARGE),
 
-                      // Description
+                      // Ingredients or recipe text details explanation block
                       Text(
-                        food['description'],
+                        food['description'] != null &&
+                                food['description'].toString().isNotEmpty
+                            ? food['description']
+                            : 'No descriptive text content is provided for this food preparation entry asset package.',
                         style: bodyMedium(context)?.copyWith(
                           color: AppConstColor.hintColor,
                           height: 1.5,
@@ -60,7 +70,7 @@ class FoodDetailsScreen extends StatelessWidget {
                 ),
               ),
 
-              // Bottom Button
+              // Bottom purchase invocation trigger button
               _buildAddToCartButton(context, controller),
             ],
           ),
@@ -69,8 +79,10 @@ class FoodDetailsScreen extends StatelessWidget {
     );
   }
 
-  /// Builds the top yellow section with the back button and food image
+  /// Builds the top signature primary color section displaying custom assets
   Widget _buildTopHeader(BuildContext context, Map<String, dynamic> food) {
+    String foodImage = food['image'] ?? '';
+
     return Container(
       height: MediaQuery.of(context).size.height * 0.45,
       width: double.infinity,
@@ -85,7 +97,7 @@ class FoodDetailsScreen extends StatelessWidget {
         bottom: false,
         child: Stack(
           children: [
-            // Back Button
+            // Safe pop tracking mechanism button
             Positioned(
               top: Dimensions.PADDING_SIZE_DEFAULT,
               left: Dimensions.PADDING_SIZE_DEFAULT,
@@ -106,15 +118,28 @@ class FoodDetailsScreen extends StatelessWidget {
                 ),
               ),
             ),
-            // Product Image
+
+            // Image object mapping placeholder wrapper
             Center(
               child: Padding(
-                padding: const EdgeInsets.only(top: 40.0),
-                child: Image.network(
-                  food['image'],
-                  height: 250,
-                  fit: BoxFit.contain,
-                ),
+                padding: const EdgeInsets.only(top: 40.0, left: 24, right: 24),
+                child: foodImage.isNotEmpty
+                    ? Image.network(
+                        foodImage,
+                        height: 250,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Icon(
+                              Icons.broken_image,
+                              size: 100,
+                              color: Colors.white,
+                            ),
+                      )
+                    : const Icon(
+                        Icons.fastfood,
+                        size: 100,
+                        color: Colors.white,
+                      ),
               ),
             ),
           ],
@@ -123,13 +148,16 @@ class FoodDetailsScreen extends StatelessWidget {
     );
   }
 
-  /// Builds the Row for Rating and Order count
+  /// Builds rating metrics display calculations layout row
   Widget _buildStatsRow(BuildContext context, Map<String, dynamic> food) {
     return Row(
       children: [
         const Icon(Icons.star, color: AppConstColor.primaryColor, size: 18),
         const SizedBox(width: 4),
-        Text(food['rating'], style: caption(context)),
+        Text(
+          "${food['rating'] ?? 0.0} Rating",
+          style: caption(context)?.copyWith(fontWeight: FontWeight.w600),
+        ),
         const SizedBox(width: Dimensions.PADDING_SIZE_LARGE),
         const Icon(
           Icons.shopping_basket,
@@ -137,12 +165,16 @@ class FoodDetailsScreen extends StatelessWidget {
           size: 18,
         ),
         const SizedBox(width: 4),
-        Text(food['orders'], style: caption(context)),
+        Text(
+          // Uses fallback text if dynamic transaction logging counts are absent
+          food['orders'] ?? '400+ Orders',
+          style: caption(context)?.copyWith(fontWeight: FontWeight.w600),
+        ),
       ],
     );
   }
 
-  /// Builds the large Add to Cart button at the bottom
+  /// Builds sticky action confirmation deck element at base anchor point
   Widget _buildAddToCartButton(
     BuildContext context,
     FoodDetailsController controller,
@@ -156,7 +188,9 @@ class FoodDetailsScreen extends StatelessWidget {
         width: double.infinity,
         height: Dimensions.BUTTON_DEFAULT_HIGHT,
         child: ElevatedButton(
-          onPressed: controller.addToCart,
+          onPressed: () {
+            controller.addToCart(context);
+          },
           style: ElevatedButton.styleFrom(
             backgroundColor: AppConstColor.primaryColor,
             foregroundColor: AppConstColor.textWhiteColor,

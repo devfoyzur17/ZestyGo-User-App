@@ -12,55 +12,113 @@ class OrderScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetBuilder<OrderController>(
+      init: OrderController(),
       builder: (controller) {
+        if (controller.isLoading) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
         return Scaffold(
           backgroundColor: AppConstColor.backgroundGray,
           body: SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(Dimensions.PADDING_SIZE_DEFAULT),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Page Title
-                  Text(
-                    "My Orders",
-                    style: headline(context)?.copyWith(
-                      fontSize: Dimensions.FONT_SIZE_OVER_EXTRA_LARGE,
-                      fontWeight: FontWeight.bold,
+            child:
+                controller.activeOrders.isEmpty && controller.pastOrders.isEmpty
+                ? _buildEmptyStateView(context)
+                : SingleChildScrollView(
+                    padding: const EdgeInsets.all(
+                      Dimensions.PADDING_SIZE_DEFAULT,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Page Title Header
+                        Text(
+                          "My Orders",
+                          style: headline(context)?.copyWith(
+                            fontSize: Dimensions.FONT_SIZE_OVER_EXTRA_LARGE,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(
+                          height: Dimensions.FREE_SIZE_EXTRA_LARGE,
+                        ),
+
+                        // Section 1: Active Order Summary Panel
+                        if (controller.activeOrders.isNotEmpty) ...[
+                          _buildSectionHeader(context, "Active Order Summary"),
+                          ListView.separated(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: controller.activeOrders.length,
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(
+                                  height: Dimensions.FREE_SIZE_DEFAULT,
+                                ),
+                            itemBuilder: (context, index) {
+                              return _buildSummaryCard(
+                                context,
+                                controller.activeOrders[index],
+                              );
+                            },
+                          ),
+                          const SizedBox(
+                            height: Dimensions.FREE_SIZE_OVER_EXTRA_LARGE,
+                          ),
+                        ],
+                        // Section 2: Historical Order Items Stack Listing
+                        if (controller.pastOrders.isNotEmpty) ...[
+                          _buildSectionHeader(
+                            context,
+                            "Past Orders",
+                            showSeeAll: controller.pastOrders.length > 5,
+                          ),
+                          ListView.separated(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: controller.pastOrders.length,
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(
+                                  height: Dimensions.FREE_SIZE_DEFAULT,
+                                ),
+                            itemBuilder: (context, index) {
+                              return _buildOrderItemCard(
+                                context,
+                                controller.pastOrders[index],
+                              );
+                            },
+                          ),
+                        ],
+                      ],
                     ),
                   ),
-                  const SizedBox(height: Dimensions.FREE_SIZE_EXTRA_LARGE),
-
-                  // Section 1: Order Summary
-                  _buildSectionHeader(context, "Order Summary"),
-                  _buildSummaryCard(context),
-                  const SizedBox(height: Dimensions.FREE_SIZE_OVER_EXTRA_LARGE),
-
-                  // Section 2: Ordered Items
-                  _buildSectionHeader(
-                    context,
-                    "Ordered Items",
-                    showSeeAll: true,
-                  ),
-                  ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: controller.orderedItems.length,
-                    separatorBuilder: (context, index) =>
-                        const SizedBox(height: Dimensions.FREE_SIZE_DEFAULT),
-                    itemBuilder: (context, index) {
-                      return _buildOrderItemCard(
-                        context,
-                        controller.orderedItems[index],
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
           ),
         );
       },
+    );
+  }
+
+  /// Fallback graphic view shown when order records collection lengths result to zero
+  Widget _buildEmptyStateView(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(
+            Icons.receipt_long_outlined,
+            size: 64,
+            color: AppConstColor.hintColor,
+          ),
+          const SizedBox(height: Dimensions.PADDING_SIZE_DEFAULT),
+          Text(
+            "You haven't placed any orders yet.",
+            style: bodyMedium(
+              context,
+            )?.copyWith(color: AppConstColor.hintColor),
+          ),
+        ],
+      ),
     );
   }
 
@@ -91,8 +149,17 @@ class OrderScreen extends StatelessWidget {
     );
   }
 
-  /// Detailed Summary Card for the latest/active order
-  Widget _buildSummaryCard(BuildContext context) {
+  /// Dynamic Summary Card rendering tracking contexts for the active ongoing checkout operation
+  Widget _buildSummaryCard(
+    BuildContext context,
+    Map<String, dynamic> activeOrder,
+  ) {
+    List items = activeOrder['items'] ?? [];
+    if (items.isEmpty) return const SizedBox.shrink();
+
+    // Fetch the primary index map data block to use as standard card thumbnail display imagery
+    var primaryItem = items.first;
+
     return Container(
       padding: const EdgeInsets.all(Dimensions.PADDING_SIZE_DEFAULT),
       decoration: BoxDecoration(
@@ -109,12 +176,18 @@ class OrderScreen extends StatelessWidget {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(Dimensions.RADIUS_DEFAULT),
-                child: Image.network(
-                  'https://img.freepik.com/free-photo/view-delicious-veggie-burger_23-2150170685.jpg',
-                  width: 80,
-                  height: 80,
-                  fit: BoxFit.cover,
-                ),
+                child:
+                    primaryItem['image'] != null &&
+                        primaryItem['image'].toString().isNotEmpty
+                    ? Image.network(
+                        primaryItem['image'],
+                        width: 80,
+                        height: 80,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) =>
+                            const Icon(Icons.broken_image, size: 80),
+                      )
+                    : const Icon(Icons.fastfood, size: 80),
               ),
               const SizedBox(width: Dimensions.PADDING_SIZE_SMALL),
               Expanded(
@@ -124,14 +197,18 @@ class OrderScreen extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          "Veggi Burger",
-                          style: headline(
-                            context,
-                          )?.copyWith(fontWeight: FontWeight.bold),
+                        Expanded(
+                          child: Text(
+                            primaryItem['name'] ?? 'Food Item',
+                            style: headline(
+                              context,
+                            )?.copyWith(fontWeight: FontWeight.bold),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                         Text(
-                          "৳10.00",
+                          "৳${primaryItem['price'] ?? 0.0}",
                           style: bodyMedium(
                             context,
                           )?.copyWith(fontWeight: FontWeight.bold),
@@ -140,12 +217,15 @@ class OrderScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      "smoky barbecue sauce & caramelized onions",
+                      items.length > 1
+                          ? "and ${items.length - 1} other delicious dynamic recipes itemized..."
+                          : "Prepared to perfection.",
                       style: caption(context),
                     ),
                     const SizedBox(height: 8),
+                    // Lifecycle string statuses: e.g., pending, processing, ready, cooking etc.
                     Text(
-                      "Ready",
+                      activeOrder['status'].toString().toUpperCase(),
                       style: bodyMedium(context)?.copyWith(
                         color: AppConstColor.primaryColor,
                         fontWeight: FontWeight.bold,
@@ -165,9 +245,9 @@ class OrderScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text("Total 4 items", style: caption(context)),
+              Text("Total ${items.length} items", style: caption(context)),
               Text(
-                "৳40.00",
+                "৳${activeOrder['totalAmount'].toStringAsFixed(2)}",
                 style: headline(context)?.copyWith(fontWeight: FontWeight.bold),
               ),
             ],
@@ -177,12 +257,21 @@ class OrderScreen extends StatelessWidget {
     );
   }
 
-  /// Compact card for historical/other ordered items
-  Widget _buildOrderItemCard(BuildContext context, Map<String, dynamic> item) {
-    // Determine status color based on design
-    Color statusColor = item['status'] == 'Delivered'
+  /// Compact card item representations generating past history order blocks
+  Widget _buildOrderItemCard(
+    BuildContext context,
+    Map<String, dynamic> pastOrder,
+  ) {
+    List items = pastOrder['items'] ?? [];
+    String foodName = items.isNotEmpty
+        ? items.first['name']
+        : 'Ordered Package';
+    String foodImage = items.isNotEmpty ? items.first['image'] : '';
+    String currentStatus = pastOrder['status'] ?? 'delivered';
+
+    Color statusColor = currentStatus.toString().toLowerCase() == 'delivered'
         ? AppConstColor.deliveryStatusColor
-        : AppConstColor.primaryColor;
+        : Colors.redAccent;
 
     return Container(
       padding: const EdgeInsets.all(Dimensions.PADDING_SIZE_SMALL),
@@ -197,12 +286,16 @@ class OrderScreen extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(Dimensions.RADIUS_DEFAULT),
-            child: Image.network(
-              item['image'],
-              width: 70,
-              height: 70,
-              fit: BoxFit.cover,
-            ),
+            child: foodImage.isNotEmpty
+                ? Image.network(
+                    foodImage,
+                    width: 70,
+                    height: 70,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) =>
+                        const Icon(Icons.broken_image, size: 70),
+                  )
+                : const Icon(Icons.fastfood, size: 70),
           ),
           const SizedBox(width: Dimensions.PADDING_SIZE_SMALL),
           Expanded(
@@ -210,17 +303,25 @@ class OrderScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  item['name'],
+                  foodName,
                   style: headline(
                     context,
                   )?.copyWith(fontWeight: FontWeight.bold),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
-                Text("Delivery • ${item['location']}", style: caption(context)),
-                Text("From ${item['shop']}", style: caption(context)),
+                Text(
+                  "Delivery • ${pastOrder['location']}",
+                  style: caption(context),
+                ),
+                Text(
+                  "Paid via: ${pastOrder['paymentMethod'].toString().toUpperCase()} • Total: ৳${pastOrder['totalAmount']}",
+                  style: caption(context),
+                ),
                 const SizedBox(height: 8),
                 Text(
-                  item['status'],
+                  currentStatus,
                   style: bodyMedium(
                     context,
                   )?.copyWith(color: statusColor, fontWeight: FontWeight.bold),

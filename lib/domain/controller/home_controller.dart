@@ -1,23 +1,115 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 
 class HomeController extends GetxController {
-  // Example list for categories
-  final List<Map<String, String>> categories = [
-    {'name': 'Cheese', 'image': 'https://cdn-icons-png.flaticon.com/512/2304/2304880.png'},
-    {'name': 'Chicken', 'image': 'https://cdn-icons-png.flaticon.com/512/1046/1046761.png'},
-    {'name': 'Veggie', 'image': 'https://cdn-icons-png.flaticon.com/512/2325/2325000.png'},
-    {'name': 'Ham', 'image': 'https://cdn-icons-png.flaticon.com/512/3143/3143640.png'},
-  ];
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  // Example list for food items
-  final List<Map<String, dynamic>> foodItems = [
-    {'name': 'Cheeseburger', 'price': 12.50, 'rating': 4.8, 'image': 'https://img.freepik.com/free-photo/delicious-burger-with-fresh-ingredients_23-2150857908.jpg'},
-    {'name': 'Veggie Burger', 'price': 12.50, 'rating': 4.5, 'image': 'https://img.freepik.com/free-photo/view-delicious-veggie-burger_23-2150170685.jpg'},
-  ];
+  String promoBannerUrl = "";
+  List<Map<String, dynamic>> categories = [];
+  List<Map<String, dynamic>> popularFoods = [];
+  List<Map<String, dynamic>> allFoods = [];
+
+  bool isLoading = true;
 
   @override
   void onInit() {
     super.onInit();
-    // Fetch data here if needed
+    fetchHomeData();
+  }
+
+  Future<void> fetchHomeData() async {
+    try {
+      isLoading = true;
+      update();
+
+      // -------------------------------------------------------------
+      // FIXED: 'banner' সাব-কালেকশন থেকে প্রথম ডকুমেন্ট রিড করার লজিক
+      // -------------------------------------------------------------
+      QuerySnapshot bannerSnapshot = await _db
+          .collection('restaurants')
+          .doc('C8ESI8GgEOLG2jMYcuET')
+          .collection('banner') // সাব-কালেকশন এক্সেস
+          .limit(1) // যেহেতু একটাই ব্যানার ডক আছে
+          .get();
+
+      if (bannerSnapshot.docs.isNotEmpty) {
+        var bannerData = bannerSnapshot.docs.first.data() as Map<String, dynamic>;
+        promoBannerUrl = bannerData['imageUrl'] ?? ""; // ফিল্ডের নাম 'imageUrl'
+      }
+
+      // 2. Fetch Root Categories
+      QuerySnapshot categorySnapshot = await _db
+          .collection('restaurants')
+          .doc('C8ESI8GgEOLG2jMYcuET')
+          .collection('categories')
+          .get();
+
+      categories.clear();
+      allFoods.clear();
+      popularFoods.clear();
+
+      List<String> categoryIds = [];
+
+      for (var doc in categorySnapshot.docs) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+
+        String fetchedImageUrl = '';
+        if (data['image'] != null && data['image'] is Map) {
+          fetchedImageUrl = data['image']['url'] ?? '';
+        }
+
+        categories.add({
+          'id': doc.id,
+          'name': data['categoryName'] ?? '',
+          'image': fetchedImageUrl,
+        });
+
+        categoryIds.add(doc.id);
+      }
+
+      // 3. Fetch Nested Foods Subcollection for Every Category
+      for (String catId in categoryIds) {
+        QuerySnapshot foodSnapshot = await _db
+            .collection('restaurants')
+            .doc('C8ESI8GgEOLG2jMYcuET')
+            .collection('categories')
+            .doc(catId)
+            .collection('foods')
+            .get();
+
+        for (var foodDoc in foodSnapshot.docs) {
+          Map<String, dynamic> foodData = foodDoc.data() as Map<String, dynamic>;
+
+          double ratingValue = double.tryParse(foodData['ratting'].toString()) ?? 0.0;
+
+          Map<String, dynamic> completeFoodItem = {
+            'id': foodDoc.id,
+            'categoryId': catId,
+            'name': foodData['foodName'] ?? '',
+            'price': double.tryParse(foodData['price'].toString()) ?? 0.0,
+            'rating': ratingValue,
+            'image': foodData['foodImage'] ?? '',
+          };
+
+          allFoods.add(completeFoodItem);
+
+          if (ratingValue >= 4.0) {
+            popularFoods.add(completeFoodItem);
+          }
+        }
+      }
+
+      popularFoods.sort((a, b) => b['rating'].compareTo(a['rating']));
+
+    } catch (e) {
+      Get.snackbar(
+        "Database Error",
+        "Failed loading data resources: ${e.toString()}",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } finally {
+      isLoading = false;
+      update();
+    }
   }
 }

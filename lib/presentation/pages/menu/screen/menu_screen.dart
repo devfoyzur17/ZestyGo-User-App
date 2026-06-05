@@ -13,6 +13,7 @@ class MenuScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetBuilder<MenuController>(
+      init: MenuController(),
       builder: (controller) {
         return Scaffold(
           backgroundColor: AppConstColor.backgroundGray,
@@ -32,18 +33,20 @@ class MenuScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: Dimensions.FREE_SIZE_DEFAULT),
 
-                  // Horizontal Category Filter
-                  _buildCategoryFilter(controller),
+                  // Enhanced Horizontal Category Filter Loading Flow
+                  controller.isCategoryLoading
+                      ? _buildCategoryLoadingSkeleton() // Beautiful static chip loaders
+                      : _buildCategoryFilter(controller),
+
                   const SizedBox(height: Dimensions.FREE_SIZE_EXTRA_LARGE),
 
-                  // Popular Food Section
-                  _buildSectionHeader(context, "Popular Food"),
-                  _buildFoodGrid(controller),
-                  const SizedBox(height: Dimensions.FREE_SIZE_EXTRA_LARGE),
+                  // All Foods Section Header
+                  _buildSectionHeader(context, "All Foods", showSeeAll: false),
 
-                  // All Foods Section
-                  _buildSectionHeader(context, "All Foods", showSeeAll: true),
-                  _buildFoodGrid(controller),
+                  // Enhanced Food Grid Loading Flow
+                  controller.isFoodLoading
+                      ? _buildFoodGridLoadingSkeleton() // Better clean grid placeholder cards
+                      : _buildFoodGrid(controller),
                 ],
               ),
             ),
@@ -53,8 +56,136 @@ class MenuScreen extends StatelessWidget {
     );
   }
 
+  /// 1. Category Loading Skeleton: Shimmer ছাড়া ক্লিন ক্যাটালগ চিপস লোডার
+  Widget _buildCategoryLoadingSkeleton() {
+    return SizedBox(
+      height: 40,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: 4, // Display 4 generic static placeholder chips
+        separatorBuilder: (_, __) =>
+            const SizedBox(width: Dimensions.PADDING_SIZE_SMALL),
+        itemBuilder: (context, index) {
+          return AnimatedContainer(
+            duration: const Duration(milliseconds: 600),
+            width: index == 0
+                ? 90
+                : (index == 1 ? 120 : 80), // Varied widths for realism
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+            decoration: BoxDecoration(
+              color: AppConstColor.backgroundWhite.withOpacity(0.6),
+              borderRadius: BorderRadius.circular(
+                Dimensions.RADIUS_OVER_EXTRA_LARGE,
+              ),
+            ),
+            child: Center(
+              child: Container(
+                height: 12,
+                decoration: BoxDecoration(
+                  color: AppConstColor.hintColor.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  /// 2. Food Grid Loading Skeleton: গ্রিড লেআউট ঠিক রেখে প্রফেশনাল কার্ড লোডার
+  Widget _buildFoodGridLoadingSkeleton() {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: 4, // Load 4 structural temporary overlay grid cells
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisSpacing: Dimensions.PADDING_SIZE_DEFAULT,
+        crossAxisSpacing: Dimensions.PADDING_SIZE_DEFAULT,
+        mainAxisExtent: 230,
+      ),
+      itemBuilder: (context, index) {
+        return Container(
+          decoration: BoxDecoration(
+            color: AppConstColor.cardColor.withOpacity(0.7),
+            borderRadius: BorderRadius.circular(Dimensions.RADIUS_LARGE),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Mock Food Image Viewport Area
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppConstColor.backgroundGray.withOpacity(0.5),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(Dimensions.RADIUS_LARGE),
+                    ),
+                  ),
+                  child: Center(
+                    child: Icon(
+                      Icons.fastfood_outlined,
+                      color: AppConstColor.hintColor.withOpacity(0.2),
+                      size: 40,
+                    ),
+                  ),
+                ),
+              ),
+              // Mock Details Strip
+              Padding(
+                padding: const EdgeInsets.all(Dimensions.PADDING_SIZE_SMALL),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Mock Title Line
+                    Container(
+                      width: 100,
+                      height: 14,
+                      decoration: BoxDecoration(
+                        color: AppConstColor.hintColor.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    // Mock Price & Rating Row
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: AppConstColor.hintColor.withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                        Container(
+                          width: 50,
+                          height: 14,
+                          decoration: BoxDecoration(
+                            color: AppConstColor.primaryColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   /// Horizontal scrollable chips for category selection
   Widget _buildCategoryFilter(MenuController controller) {
+    if (controller.categories.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return SizedBox(
       height: 40,
       child: ListView.separated(
@@ -85,7 +216,7 @@ class MenuScreen extends StatelessWidget {
               ),
               child: Center(
                 child: Text(
-                  controller.categories[index],
+                  controller.categories[index]['name'] ?? '',
                   style: bodyMedium(context)?.copyWith(
                     color: isSelected
                         ? AppConstColor.textWhiteColor
@@ -128,12 +259,21 @@ class MenuScreen extends StatelessWidget {
     );
   }
 
-  /// Reusable 2-column food grid
+  /// Reusable 2-column food grid mapped to dynamic categories
   Widget _buildFoodGrid(MenuController controller) {
+    if (controller.foodItems.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.only(top: 40),
+          child: Text("No items available under this category."),
+        ),
+      );
+    }
+
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: 2, // Following the design pattern
+      itemCount: controller.foodItems.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         mainAxisSpacing: Dimensions.PADDING_SIZE_DEFAULT,
@@ -142,9 +282,11 @@ class MenuScreen extends StatelessWidget {
       ),
       itemBuilder: (context, index) {
         var food = controller.foodItems[index];
+        String foodImage = food['image'] ?? '';
+
         return InkWell(
           onTap: () {
-            Get.toNamed(RouteName.FOOD_DETAILS_SCREEN);
+            Get.toNamed(RouteName.FOOD_DETAILS_SCREEN, arguments: food);
           },
           child: Container(
             decoration: BoxDecoration(
@@ -161,14 +303,28 @@ class MenuScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(Dimensions.RADIUS_LARGE),
-                    ),
-                    child: Image.network(
-                      food['image'],
-                      fit: BoxFit.cover,
-                      width: double.infinity,
+                  child: Center(
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(Dimensions.RADIUS_LARGE),
+                      ),
+                      child: foodImage.isNotEmpty
+                          ? Image.network(
+                              foodImage,
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(
+                                    Icons.broken_image,
+                                    size: 50,
+                                    color: Colors.grey,
+                                  ),
+                            )
+                          : const Icon(
+                              Icons.fastfood,
+                              size: 50,
+                              color: Colors.grey,
+                            ),
                     ),
                   ),
                 ),
@@ -178,24 +334,30 @@ class MenuScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        food['name'],
+                        food['name'] ?? '',
                         style: bodyMedium(
                           context,
                         )?.copyWith(fontWeight: FontWeight.bold),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
                       Row(
                         children: [
                           const Icon(
+
                             Icons.star,
                             color: AppConstColor.primaryColor,
                             size: 14,
                           ),
                           const SizedBox(width: 4),
-                          Text("${food['rating']}", style: caption(context)),
+                          Text(
+                            "${food['rating'] ?? 0.0}",
+                            style: caption(context),
+                          ),
                           const Spacer(),
                           Text(
-                            "৳${food['price']}",
+                            "৳${food['price'] ?? 0.0}",
                             style: bodyMedium(
                               context,
                             )?.copyWith(fontWeight: FontWeight.bold),

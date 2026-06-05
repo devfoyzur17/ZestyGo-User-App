@@ -5,6 +5,7 @@ import 'package:demo_app/domain/controller/food_details_controller.dart';
 import 'package:demo_app/domain/controller/home_controller.dart';
 import 'package:demo_app/domain/controller/menu_controller.dart';
 import 'package:demo_app/domain/controller/order_controller.dart';
+import 'package:demo_app/domain/controller/privacy_policy_controller.dart';
 import 'package:demo_app/domain/controller/profile_controller.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -16,6 +17,8 @@ import 'core/app_localizetion_service.dart';
 import 'data/services/dio/dio_client.dart';
 import 'data/services/dio/logging_interceptor.dart';
 import 'data/services/sharedprefarance/local_storage.dart';
+import 'domain/controller/cart_controller.dart';
+import 'domain/controller/checkout_controller.dart';
 
 Future<void> init() async {
   await dotenv.load(fileName: "assets/.env");
@@ -59,4 +62,7 @@ Future<void> init() async {
   Get.lazyPut(() => OrderController(),fenix: true);
   Get.lazyPut(() => ProfileController(),fenix: true);
   Get.lazyPut(() => FoodDetailsController(),fenix: true);
+  Get.lazyPut(() => CartController(),fenix: true);
+  Get.lazyPut(() => CheckoutController(),fenix: true);
+  Get.lazyPut(() => PrivacyPolicyController(),fenix: true);
 }

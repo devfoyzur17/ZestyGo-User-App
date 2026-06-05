@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../domain/controller/home_controller.dart';
+import '../../../../domain/controller/profile_controller.dart';
 import '../../../const/app_const_dimensions.dart';
 import '../../../const/app_const_theme.dart';
 import '../../../const/styles.dart';
@@ -18,90 +19,185 @@ class HomeScreen extends StatelessWidget {
       builder: (controller) {
         return Scaffold(
           backgroundColor: AppConstColor.backgroundGray,
-          body: SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(Dimensions.PADDING_SIZE_DEFAULT),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildHeader(context),
-                  const SizedBox(height: Dimensions.FREE_SIZE_EXTRA_LARGE),
-                  _buildPromoBanner(),
-                  const SizedBox(height: Dimensions.FREE_SIZE_EXTRA_LARGE),
-                  _buildCategoryList(controller),
-                  const SizedBox(height: Dimensions.FREE_SIZE_OVER_EXTRA_LARGE),
-                  _buildSectionTitle(
-                    context,
-                    "Popular Foods",
-                    showSeeAll: false,
+          // Master Loader layout conditionally handling the entire screen content
+          body: controller.isLoading
+              ? const Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      AppConstColor.primaryColor,
+                    ),
                   ),
-                  _buildFoodGrid(controller, isPopular: true),
-                  const SizedBox(height: Dimensions.FREE_SIZE_EXTRA_LARGE),
-                  _buildSectionTitle(context, "All Foods", showSeeAll: true),
-                  _buildFoodGrid(controller, isPopular: false),
-                ],
-              ),
-            ),
-          ),
+                )
+              : SafeArea(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(
+                      Dimensions.PADDING_SIZE_DEFAULT,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildHeader(context),
+                        const SizedBox(
+                          height: Dimensions.FREE_SIZE_EXTRA_LARGE,
+                        ),
+                        _buildPromoBanner(controller),
+                        const SizedBox(
+                          height: Dimensions.FREE_SIZE_EXTRA_LARGE,
+                        ),
+
+                        // Categories Horizontal list
+                        _buildCategoryList(controller),
+                        const SizedBox(
+                          height: Dimensions.FREE_SIZE_OVER_EXTRA_LARGE,
+                        ),
+
+                        // Popular Foods
+                        _buildSectionTitle(
+                          context,
+                          "Popular Foods",
+                          showSeeAll: false,
+                        ),
+                        _buildFoodGrid(controller, isPopular: true),
+                        const SizedBox(
+                          height: Dimensions.FREE_SIZE_EXTRA_LARGE,
+                        ),
+
+                        // All Foods
+                        _buildSectionTitle(
+                          context,
+                          "All Foods",
+                          showSeeAll: true,
+                        ),
+                        _buildFoodGrid(controller, isPopular: false),
+                      ],
+                    ),
+                  ),
+                ),
         );
       },
     );
   }
 
-  /// User Profile Header Section
+  /// User Profile Header Section Linked Dynamically with ProfileController
   Widget _buildHeader(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(2),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: AppConstColor.dividerColor, width: 1),
-          ),
-          child: CircleAvatar(
-            radius: 25,
-            backgroundColor: AppConstColor.backgroundWhite,
-            child: Image.asset(
-              AppConstAssets.userIcon,
-              color: AppConstColor.textBlackColor,
-            ),
-          ),
-        ),
-        const SizedBox(width: Dimensions.PADDING_SIZE_SMALL),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return GetBuilder<ProfileController>(
+      init: ProfileController(),
+      builder: (profileController) {
+        bool hasProfileImage = profileController.profileImage.trim().isNotEmpty;
+
+        return Row(
           children: [
-            Text("Harry Brook", style: headline(context)),
-            Text("brook@gmail.com", style: caption(context)),
+            // Dynamic Profile Image Avatar Frame
+            Container(
+              padding: const EdgeInsets.all(2),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: AppConstColor.dividerColor, width: 1),
+              ),
+              child: CircleAvatar(
+                radius: 25,
+                backgroundColor: AppConstColor.backgroundWhite,
+                backgroundImage: hasProfileImage
+                    ? NetworkImage(profileController.profileImage)
+                    : null,
+                child: hasProfileImage
+                    ? null
+                    : Padding(
+                        padding: const EdgeInsets.all(4.0),
+                        child: Image.asset(
+                          AppConstAssets.userIcon,
+                          color: AppConstColor.textBlackColor,
+                        ),
+                      ),
+              ),
+            ),
+            const SizedBox(width: Dimensions.PADDING_SIZE_SMALL),
+
+            // Dynamic Identity Texts (Name and Email Stack)
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    profileController.userName == "Loading..."
+                        ? "Loading Name..."
+                        : profileController.userName,
+                    style: headline(
+                      context,
+                    )?.copyWith(fontWeight: FontWeight.bold),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    profileController.userEmail,
+                    style: caption(
+                      context,
+                    )?.copyWith(color: AppConstColor.hintColor),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
           ],
-        ),
-      ],
+        );
+      },
     );
   }
+  /// Dynamic Promo Banner Connected with HomeController
+  Widget _buildPromoBanner(HomeController controller) {
+    String bannerImage = controller.promoBannerUrl.trim();
 
-  /// Single Image Promo Banner
-  /// This version uses a single flattened image that already contains the text.
-  Widget _buildPromoBanner() {
+    if (bannerImage.isEmpty) {
+      return Container(
+        height: 150,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: AppConstColor.primaryColor.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(Dimensions.RADIUS_LARGE),
+        ),
+        child: const Center(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.fastfood, color: AppConstColor.primaryColor),
+              SizedBox(width: 8),
+              Text(
+                "Delicious Foods Await You!",
+                style: TextStyle(
+                  color: AppConstColor.primaryColor,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return ClipRRect(
-      // Applies the professional rounded corners from your dimensions file
       borderRadius: BorderRadius.circular(Dimensions.RADIUS_LARGE),
       child: Image.network(
-        'https://img.freepik.com/free-vector/flat-food-sale-background_23-2149167390.jpg', // Placeholder: Replace with your actual banner URL
+        bannerImage,
         width: double.infinity,
-        height: 150, // Standard height for promo banners
-        fit: BoxFit
-            .cover, // Ensures the banner fills the width without distortion
+        height: 150,
+        fit: BoxFit.cover,
         loadingBuilder: (context, child, loadingProgress) {
           if (loadingProgress == null) return child;
-          // Shimmer-like placeholder while the image loads
           return Container(
             height: 150,
             width: double.infinity,
             color: AppConstColor.dividerColor.withOpacity(0.5),
+            child: const Center(
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(AppConstColor.primaryColor),
+              ),
+            ),
           );
         },
         errorBuilder: (context, error, stackTrace) {
-          // Professional fallback if the network image fails to load
           return Container(
             height: 150,
             width: double.infinity,
@@ -121,15 +217,27 @@ class HomeScreen extends StatelessWidget {
 
   /// Horizontal Category List
   Widget _buildCategoryList(HomeController controller) {
+    if (controller.categories.isEmpty) {
+      return const SizedBox(
+        height: 90,
+        child: Center(child: Text('No categories found.')),
+      );
+    }
+
     return SizedBox(
       height: 90,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 4),
         itemCount: controller.categories.length,
         separatorBuilder: (_, __) =>
             const SizedBox(width: Dimensions.PADDING_SIZE_DEFAULT),
         itemBuilder: (context, index) {
           var item = controller.categories[index];
+
+          String categoryName = item['name'] ?? '';
+          String categoryImage = item['image'] ?? '';
+
           return Column(
             children: [
               Container(
@@ -146,10 +254,32 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: Image.network(item['image']!, height: 35, width: 35),
+                child: categoryImage.isNotEmpty
+                    ? Image.network(
+                        categoryImage,
+                        height: 35,
+                        width: 35,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Icon(
+                              Icons.restaurant,
+                              size: 35,
+                              color: Colors.grey,
+                            ),
+                      )
+                    : const Icon(
+                        Icons.restaurant,
+                        size: 35,
+                        color: Colors.grey,
+                      ),
               ),
               const SizedBox(height: Dimensions.PADDING_SIZE_EXTRA_SMALL),
-              Text(item['name']!, style: bodyMedium(context)),
+              Text(
+                categoryName,
+                style: bodyMedium(context),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ],
           );
         },
@@ -182,23 +312,42 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  /// Responsive Food Grid
+  /// Food Grid
   Widget _buildFoodGrid(HomeController controller, {required bool isPopular}) {
+    List<Map<String, dynamic>> targetedList = isPopular
+        ? controller.popularFoods
+        : controller.allFoods;
+
+    if (targetedList.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 20),
+          child: Text("No items available here yet."),
+        ),
+      );
+    }
+
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: 2, // Fixed for demo based on image
+      itemCount: targetedList.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         mainAxisSpacing: Dimensions.PADDING_SIZE_DEFAULT,
         crossAxisSpacing: Dimensions.PADDING_SIZE_DEFAULT,
-        mainAxisExtent: 220, // Manual height for responsiveness
+        mainAxisExtent: 220,
       ),
       itemBuilder: (context, index) {
-        var food = controller.foodItems[index];
+        var food = targetedList[index];
+        String foodImage = food['image'] ?? '';
+
         return InkWell(
           onTap: () {
-            Get.toNamed(RouteName.FOOD_DETAILS_SCREEN);
+            Get.toNamed(
+              RouteName.FOOD_DETAILS_SCREEN,
+              arguments:
+                  food, // Transmits the complete dynamic data map smoothly
+            );
           },
           child: Container(
             decoration: BoxDecoration(
@@ -219,11 +368,23 @@ class HomeScreen extends StatelessWidget {
                     borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(Dimensions.RADIUS_LARGE),
                     ),
-                    child: Image.network(
-                      food['image'],
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                    ),
+                    child: foodImage.isNotEmpty
+                        ? Image.network(
+                            foodImage,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Icon(
+                                  Icons.broken_image,
+                                  size: 50,
+                                  color: Colors.grey,
+                                ),
+                          )
+                        : const Icon(
+                            Icons.fastfood,
+                            size: 50,
+                            color: Colors.grey,
+                          ),
                   ),
                 ),
                 Padding(
@@ -232,10 +393,12 @@ class HomeScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        food['name'],
+                        food['name'] ?? '',
                         style: bodyMedium(
                           context,
                         )?.copyWith(fontWeight: FontWeight.bold),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
                       Row(
@@ -246,10 +409,13 @@ class HomeScreen extends StatelessWidget {
                             size: 14,
                           ),
                           const SizedBox(width: 4),
-                          Text("${food['rating']}", style: caption(context)),
+                          Text(
+                            "${food['rating'] ?? 0.0}",
+                            style: caption(context),
+                          ),
                           const Spacer(),
                           Text(
-                            "৳${food['price']}",
+                            "৳${food['price'] ?? 0.0}",
                             style: bodyMedium(
                               context,
                             )?.copyWith(fontWeight: FontWeight.bold),

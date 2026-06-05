@@ -9,7 +9,7 @@ void showCustomSnackBar(
 }) {
   Get.showSnackbar(
     GetSnackBar(
-      backgroundColor: isError ? Colors.red : Theme.of(context).dividerColor,
+      backgroundColor: isError ? Colors.red : Colors.green,
       message: message,
       duration: const Duration(seconds: 2),
       snackStyle: SnackStyle.FLOATING,
