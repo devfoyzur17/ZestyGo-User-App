@@ -22,22 +22,20 @@ class HomeController extends GetxController {
       isLoading = true;
       update();
 
-      // -------------------------------------------------------------
-      // FIXED: 'banner' সাব-কালেকশন থেকে প্রথম ডকুমেন্ট রিড করার লজিক
-      // -------------------------------------------------------------
+
       QuerySnapshot bannerSnapshot = await _db
           .collection('restaurants')
           .doc('C8ESI8GgEOLG2jMYcuET')
-          .collection('banner') // সাব-কালেকশন এক্সেস
-          .limit(1) // যেহেতু একটাই ব্যানার ডক আছে
+          .collection('banner')
+          .limit(1)
           .get();
 
       if (bannerSnapshot.docs.isNotEmpty) {
         var bannerData = bannerSnapshot.docs.first.data() as Map<String, dynamic>;
-        promoBannerUrl = bannerData['imageUrl'] ?? ""; // ফিল্ডের নাম 'imageUrl'
+        promoBannerUrl = bannerData['imageUrl'] ?? "";
       }
 
-      // 2. Fetch Root Categories
+
       QuerySnapshot categorySnapshot = await _db
           .collection('restaurants')
           .doc('C8ESI8GgEOLG2jMYcuET')
@@ -67,7 +65,7 @@ class HomeController extends GetxController {
         categoryIds.add(doc.id);
       }
 
-      // 3. Fetch Nested Foods Subcollection for Every Category
+
       for (String catId in categoryIds) {
         QuerySnapshot foodSnapshot = await _db
             .collection('restaurants')

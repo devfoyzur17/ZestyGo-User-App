@@ -24,17 +24,17 @@ class EditProfileController extends GetxController {
     loadCurrentUserData();
   }
 
-  /// Fetches existing database states to populate text controllers on screen initialization
+
   Future<void> loadCurrentUserData() async {
     try {
       User? currentUser = _auth.currentUser;
       if (currentUser == null) return;
 
-      // Base initialization directly via Firebase Auth data structure
+
       emailController.text = currentUser.email ?? "";
       profileImage = currentUser.photoURL ?? "";
 
-      // Load additional dynamic fields from Firestore Document snapshot
+
       DocumentSnapshot userDoc = await _firestore.collection('users').doc(currentUser.uid).get();
 
       if (userDoc.exists && userDoc.data() != null) {
@@ -53,7 +53,7 @@ class EditProfileController extends GetxController {
     }
   }
 
-  /// Updates modified user specifications into Cloud Firestore
+
   Future<void> updateProfileData() async {
     String name = nameController.text.trim();
     String phone = phoneController.text.trim();
@@ -70,19 +70,19 @@ class EditProfileController extends GetxController {
 
       User? currentUser = _auth.currentUser;
       if (currentUser != null) {
-        // 1. Update fields inside Firestore Document reference tree
+
         await _firestore.collection('users').doc(currentUser.uid).update({
           'name': name,
           'phone': phone,
           'homeAddress': home,
         });
 
-        // 2. Sync and force-update the active ProfileController so the previous screen updates instantly
+
         if (Get.isRegistered<ProfileController>()) {
           Get.find<ProfileController>().fetchUserProfileAndStats();
         }
 
-        Get.back(); // Return to previous layout screen stack upon success pipeline execution
+        Get.back();
         Get.snackbar(
           "Success",
           "Profile information updated successfully!",

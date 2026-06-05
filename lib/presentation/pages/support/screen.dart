@@ -50,8 +50,7 @@ class SupportScreen extends StatelessWidget {
     );
   }
 
-  /// Clean Appbar view with standard design back button alignment
-  PreferredSizeWidget _buildAppBar(BuildContext context) {
+   PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
       backgroundColor: Colors.transparent,
       elevation: 0,
@@ -88,9 +87,7 @@ class SupportScreen extends StatelessWidget {
             subtitle: "+880 1700-000000",
             iconColor: Colors.blue,
             onTap: () {
-              // TODO: Implement url_launcher to call package directly
-              print("Triggering native dialer stream integration.");
-            },
+             },
           ),
         ),
         const SizedBox(width: Dimensions.PADDING_SIZE_DEFAULT),
@@ -102,8 +99,7 @@ class SupportScreen extends StatelessWidget {
             subtitle: "support@zestygo.com",
             iconColor: Colors.deepOrange,
             onTap: () {
-              // TODO: Implement url_launcher to open mail apps
-              print("Triggering native mailing platform integration.");
+
             },
           ),
         ),

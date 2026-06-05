@@ -6,7 +6,7 @@ import '../../presentation/routes/app_routes.dart';
 import 'cart_controller.dart';
 
 class FoodDetailsController extends GetxController {
-  // Reactive target storage container map for runtime parsing
+
   Map<String, dynamic> foodData = {};
   bool isLoading = true;
 
@@ -16,7 +16,7 @@ class FoodDetailsController extends GetxController {
     getPassedArguments();
   }
 
-  /// Extracts arguments transmitted during the routing process transition
+
   void getPassedArguments() {
     try {
       isLoading = true;
@@ -32,16 +32,16 @@ class FoodDetailsController extends GetxController {
       );
     } finally {
       isLoading = false;
-      update(); // Notifies the screen view elements to paint content onto the canvas
+      update();
     }
   }
 
-  /// Handles adding the active menu selection item to user checkout records
+
   void addToCart(BuildContext context) {
-    // Find the global active instances of the cart tracker controller
+
     final CartController cartController = Get.find<CartController>();
 
-    // Pass current dynamic food details into the dynamic cart state engine
+
     cartController.addToCart(foodData);
     showCustomSnackBar(
       "${foodData['name'] ?? 'Item'} added to your cart!",

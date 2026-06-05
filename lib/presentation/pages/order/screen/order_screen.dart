@@ -223,8 +223,7 @@ class OrderScreen extends StatelessWidget {
                       style: caption(context),
                     ),
                     const SizedBox(height: 8),
-                    // Lifecycle string statuses: e.g., pending, processing, ready, cooking etc.
-                    Text(
+                     Text(
                       activeOrder['status'].toString().toUpperCase(),
                       style: bodyMedium(context)?.copyWith(
                         color: AppConstColor.primaryColor,
